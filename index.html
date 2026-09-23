@@ -3,802 +3,616 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1e2a45">
+<meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BTech Repair">
-<meta name="application-name" content="BTech Repair">
-<title>BTech Repair – Job Tracker</title>
+<title>BTech Repair – Modern System</title>
 
-<!-- Google Fonts -->
+<!-- Fonts & Icons -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
 <style>
 :root {
-  --bg:#0f1117; --s1:#181c27; --s2:#1f2335; --border:#2a2f45;
-  --accent:#4f8ef7; --accent2:#38bdf8; --green:#22c55e;
-  --yellow:#f59e0b; --red:#ef4444; --purple:#a78bfa;
-  --text:#e2e8f0; --t2:#94a3b8; --t3:#64748b;
-  --mono:'Courier New',Courier,monospace; 
-  --sans: 'Inter', 'Noto Sans Sinhala', system-ui, -apple-system, sans-serif;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg: #0f172a;          /* Deep Slate Background */
+  --surface: #1e293b;     /* Card Surface */
+  --surface2: #334155;    /* Input/Hover Surface */
+  --border: #475569;      /* Subtle Border */
+  
+  --primary: #3b82f6;     /* Blue */
+  --primary-grad: linear-gradient(135deg, #3b82f6, #0ea5e9);
+  --success: #10b981;     /* Emerald */
+  --warning: #f59e0b;     /* Amber */
+  --danger: #ef4444;      /* Red */
+  --purple: #8b5cf6;
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  
+  --font-sans: 'Inter', 'Noto Sans Sinhala', sans-serif;
+  --font-mono: 'Courier New', monospace;
+  
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  
+  box-sizing: border-box;
 }
-*,*::before,*::after{box-sizing:inherit;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
 
-/* LOGIN OVERLAY */
-#loginOverlay {
-  position:fixed;inset:0;background:var(--bg);z-index:9999;
-  display:flex;align-items:center;justify-content:center;
-}
-.login-box {
-  background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:30px;width:340px;text-align:center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-.login-box input {
-  width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:6px;font-family:var(--sans);font-size:14px;outline:none;margin-bottom:15px;box-sizing:border-box;
-}
-.login-box input:focus { border-color:var(--accent); }
+*, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); font-size: 14px; -webkit-font-smoothing: antialiased; }
 
-/* HEADER */
-header{background:var(--s1);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo-wrap{display:flex;flex-direction:column;gap:1px}
-.logo-top{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;}
-.logo-main{font-size:17px;font-weight:700;color:var(--text)}
-.logo-sub{font-size:10px;color:var(--t3)}
-.hdr-right{display:flex;gap:6px;align-items:center}
+/* LAYOUT */
+#appContainer { display: none; height: 100%; overflow: hidden; }
+.layout-wrapper { display: flex; height: 100%; width: 100%; }
 
-/* SYNC STATUS */
-.sync-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
-.sync-ok{background:rgba(34,197,94,.15);color:var(--green)}
-.sync-err{background:rgba(239,68,68,.15);color:var(--red)}
-.sync-ing{background:rgba(79,142,247,.15);color:var(--accent)}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-.sync-ing .sync-dot{animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* SIDEBAR (Desktop) */
+.sidebar { width: 260px; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-right: 1px solid var(--surface2); display: flex; flex-direction: column; padding: 20px 0; z-index: 100; }
+.brand-area { padding: 0 24px 30px; border-bottom: 1px solid var(--surface2); margin-bottom: 20px; }
+.brand-sub { font-size: 10px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 2px; }
+.brand-title { font-size: 22px; font-weight: 700; color: var(--text-main); margin-top: 4px; }
+.nav-menu { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 0 16px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+.nav-item.active { background: rgba(59, 130, 246, 0.15); color: var(--primary); font-weight: 600; }
+.nav-item .material-symbols-outlined { font-size: 22px; }
+.user-area { padding: 20px 24px 0; border-top: 1px solid var(--surface2); display: flex; align-items: center; justify-content: space-between; }
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.stat{background:var(--s1);padding:10px 14px}
-.stat-val{font-size:20px;font-weight:700;;color:var(--text)}
-.stat-val.green{color:var(--green)}.stat-val.yellow{color:var(--yellow)}.stat-val.red{color:var(--red)}.stat-val.blue{color:var(--accent)}
-.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-top:2px;white-space:nowrap}
+/* MOBILE BOTTOM NAV */
+.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(15px); border-top: 1px solid var(--surface2); padding: 8px 16px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 100; justify-content: space-around; }
+.mob-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 10px; font-weight: 500; cursor: pointer; }
+.mob-nav-item.active { color: var(--primary); }
+.mob-nav-item .material-symbols-outlined { font-size: 24px; }
 
-/* TABS */
-.tabs{display:flex;gap:2px;padding:0 16px;background:var(--s1);border-bottom:1px solid var(--border)}
-.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
-.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* MAIN CONTENT */
+.main-content { flex: 1; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; }
+header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--surface2); }
+.header-actions { display: flex; gap: 12px; align-items: center; }
 
-/* TOOLBAR */
-.toolbar{padding:10px 16px;display:flex;gap:8px;align-items:center;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap}
-.search-wrap{position:relative;flex:1;min-width:160px}
-.search-wrap input{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:7px 10px 7px 10px;padding-right:35px;border-radius:6px;font-family:var(--sans);font-size:13px;outline:none;box-sizing:border-box}
-.search-wrap input::placeholder{color:var(--t2);opacity:0.8}
-.search-wrap input:focus{border-color:var(--accent)}
-.search-ico{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:16px;z-index:10;pointer-events:auto;cursor:pointer;padding:4px;user-select:none}
-select,.btn{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;cursor:pointer;outline:none;transition:background .15s}
-select:focus{border-color:var(--accent)}
-.btn{display:flex;align-items:center;gap:5px;white-space:nowrap}
-.btn:hover{background:var(--border)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-.btn.primary:hover{background:#3b7de0}
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-main); padding: 8px 16px; border-radius: var(--radius-sm); font-family: var(--font-sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; outline: none; }
+.btn:hover { background: var(--border); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--primary-grad); border: none; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+.btn-primary:hover { background: linear-gradient(135deg, #2563eb, #0284c7); box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); }
+.btn-icon { padding: 8px; border-radius: 50%; }
+
+/* STATS CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--surface2); border-radius: var(--radius-lg); padding: 20px; display: flex; align-items: flex-start; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-color: var(--border); }
+.stat-info { display: flex; flex-direction: column; gap: 4px; }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 26px; font-weight: 700; color: var(--text-main); }
+.stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.stat-icon .material-symbols-outlined { font-size: 24px; }
+
+/* TEXT COLORS */
+.txt-blue { color: var(--primary); }
+.txt-green { color: var(--success); }
+.txt-amber { color: var(--warning); }
+.txt-red { color: var(--danger); }
+.bg-blue { background: rgba(59, 130, 246, 0.15); color: var(--primary); }
+.bg-green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.bg-amber { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.bg-red { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+/* SYNC BADGE */
+.sync-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.sync-badge .material-symbols-outlined { font-size: 14px; }
+
+/* TOOLBAR & INPUTS */
+.toolbar { padding: 0 24px 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+.search-box { position: relative; flex: 1; min-width: 200px; }
+.search-box .material-symbols-outlined { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 20px; }
+input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text-main); padding: 10px 12px; border-radius: var(--radius-sm); font-family: var(--font-sans); font-size: 13px; outline: none; transition: border 0.2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.search-box input { padding-left: 40px; border-radius: 20px; background: rgba(51, 65, 85, 0.5); }
 
 /* TABLE */
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-thead th{background:var(--s1);padding:9px 10px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
-thead th:hover{color:var(--accent)}
-tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
-tbody tr:hover{background:var(--s2)}
-tbody tr.delayed-row{background:rgba(239,68,68,.08)}
-tbody tr.delayed-row:hover{background:rgba(239,68,68,.15)}
-tbody td{padding:9px 10px;vertical-align:middle}
-td.job-no{;font-size:13px;font-weight:600;color:var(--accent2)}
-td.gn{;font-size:11px;color:var(--t3)}
-td.cust{font-weight:500}
-td.model-c{font-size:12px;color:var(--t2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-td.repair-c{font-size:12px;color:var(--t2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-td.charge-c{;font-size:13px;font-weight:600;color:var(--green)}
-td.date-c{;font-size:11px;color:var(--t3);white-space:nowrap}
-td.days-c{;font-size:11px;color:var(--t3);text-align:center}
+.table-container { padding: 0 24px 24px; overflow-x: auto; }
+.table-wrapper { background: var(--surface); border: 1px solid var(--surface2); border-radius: var(--radius-lg); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { background: rgba(15, 23, 42, 0.4); padding: 14px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--surface2); user-select: none; cursor: pointer; white-space: nowrap; }
+th:hover { color: var(--primary); }
+td { padding: 14px 16px; border-bottom: 1px solid var(--surface2); vertical-align: middle; font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
-/* BADGE */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-.badge.done{background:rgba(34,197,94,.15);color:var(--green)}
-.badge.pending{background:rgba(245,158,11,.15);color:var(--yellow)}
-.badge.cant{background:rgba(239,68,68,.15);color:var(--red)}
-.badge.delayed{background:var(--red);color:#fff}
-.badge.paid{background:rgba(79,142,247,.15);color:var(--accent)}
-.bdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+/* SMART ANIMATION: DELAYED ROW PULSE */
+@keyframes pulseRed { 
+  0% { background-color: rgba(239, 68, 68, 0.02); } 
+  50% { background-color: rgba(239, 68, 68, 0.12); } 
+  100% { background-color: rgba(239, 68, 68, 0.02); } 
+}
+tr.delayed-row td { animation: pulseRed 2.5s infinite ease-in-out; }
+tr.delayed-row:hover td { background: rgba(239, 68, 68, 0.15); }
 
-/* BRAND */
-.brand{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;;text-transform:uppercase}
-.brand.dell{background:rgba(0,120,212,.2);color:#60a5fa}
-.brand.hp{background:rgba(0,163,151,.2);color:#34d399}
-.brand.lenovo{background:rgba(167,139,250,.2);color:var(--purple)}
-.brand.asus{background:rgba(245,158,11,.2);color:var(--yellow)}
-.brand.acer{background:rgba(34,197,94,.2);color:var(--green)}
-.brand.msi{background:rgba(239,68,68,.2);color:#f87171}
-.brand.sony{background:rgba(148,163,184,.2);color:#cbd5e1}
-.brand.other{background:rgba(100,116,139,.2);color:var(--t3)}
+/* BADGES */
+.status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.status-badge .material-symbols-outlined { font-size: 14px; }
+.badge-solid-red { background: var(--danger); color: white; box-shadow: 0 2px 8px rgba(239,68,68,0.4); }
 
-/* MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px}
-.overlay.open{display:flex}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:24px;width:540px;max-width:100%;max-height:90vh;overflow-y:auto}
-.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
-.close-btn{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:2px 6px}
-.close-btn:hover{color:var(--text)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-full{grid-column:1/-1}
-label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:4px}
-input[type=text],input[type=date],input[type=number],textarea,select.field{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;outline:none}
-input:focus,textarea:focus,select.field:focus{border-color:var(--accent)}
-textarea{resize:vertical;min-height:60px}
-.form-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+/* MODALS */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 200; align-items: center; justify-content: center; padding: 16px; opacity: 0; transition: opacity 0.3s ease; }
+.overlay.open { display: flex; opacity: 1; }
+.modal { background: var(--surface); border: 1px solid var(--surface2); border-radius: var(--radius-lg); padding: 24px; width: 600px; max-width: 100%; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s ease; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+.overlay.open .modal { transform: translateY(0); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
+.close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; padding: 4px; border-radius: 50%; transition: 0.2s; }
+.close-btn:hover { background: var(--surface2); color: var(--text-main); }
 
-/* VIEW PANEL */
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
-.detail-item label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:2px}
-.detail-item .val{font-size:13px;color:var(--text)}
-.sep{border:none;border-top:1px solid var(--border);margin:14px 0}
+/* FORM GRID */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-full { grid-column: 1 / -1; }
+label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* EMPTY / LOADING */
-.empty{text-align:center;padding:50px 20px;color:var(--t3)}
-.empty-ico{font-size:36px;margin-bottom:10px}
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* LOADING STATE */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state .material-symbols-outlined { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(59, 130, 246, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* PAGINATION */
-.pagination{display:flex;gap:5px;padding:12px 16px;align-items:center;flex-wrap:wrap}
-.page-btn{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
-.page-btn:hover{border-color:var(--accent)}
-.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.page-info{color:var(--t3);font-size:12px;margin-left:auto}
-
-/* ANALYTICS */
-.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;padding:16px}
-.chart-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:18px}
-.chart-title{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-.bar-label{font-size:11px;color:var(--t2);min-width:90px;flex-shrink:0}
-.bar-track{flex:1;background:var(--s2);border-radius:4px;height:7px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .4s}
-.bar-val{;font-size:10px;color:var(--t3);min-width:44px;text-align:right}
-.rev-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
-.rev-row:last-child{border-bottom:none}
-.rev-month{font-size:12px;color:var(--t2)}
-.rev-amt{;font-size:12px;font-weight:600;color:var(--green)}
+/* LOGIN */
+.login-wrap { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.login-box { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px); border: 1px solid var(--surface2); border-radius: var(--radius-lg); padding: 40px; width: 380px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
 
 /* TOAST */
-.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-.toast.ok{border-color:var(--green);color:var(--green)}
-.toast.err{border-color:var(--red);color:var(--red)}
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: 30px; padding: 12px 24px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { border-color: var(--success); color: var(--success); }
+.toast.err { border-color: var(--danger); color: var(--danger); }
 
-@media(max-width:768px){
-  .stats{grid-template-columns:repeat(3,1fr)}
-  .form-grid{grid-template-columns:1fr}
-  .hdr-right .btn-txt{display:none}
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .mobile-nav { display: flex; }
+  .form-grid { grid-template-columns: 1fr; }
+  header { padding: 12px 16px; }
+  .stats-grid { padding: 16px; grid-template-columns: repeat(2, 1fr); }
+  .table-container { padding: 0 16px 80px; }
+  .hide-mob { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN OVERLAY -->
-<div id="loginOverlay">
+<!-- LOGIN -->
+<div class="login-wrap" id="loginOverlay">
   <div class="login-box">
-    <div style="font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">GUI Technologies</div>
-    <h2 style="margin-bottom:24px;color:var(--text);font-size:20px;">BTech Repair System</h2>
+    <div class="brand-sub" style="margin-bottom:8px">GUI Technologies</div>
+    <h2 style="font-size: 24px; margin-bottom: 30px;">BTech System</h2>
     
-    <div style="text-align:left;">
+    <div style="text-align:left; margin-bottom: 16px;">
       <label>Email Address</label>
-      <input type="email" id="loginEmail" placeholder="admin@guitech.com" autocomplete="email">
+      <input type="email" id="loginEmail" placeholder="admin@guitech.com">
     </div>
-    
-    <div style="text-align:left;">
+    <div style="text-align:left; margin-bottom: 24px;">
       <label>Password</label>
       <input type="password" id="loginPass" placeholder="••••••••">
     </div>
     
-    <button class="btn primary" style="width:100%;justify-content:center;padding:10px;margin-top:10px;" id="loginBtn" onclick="handleLogin()">Sign In</button>
-    <div id="loginErr" style="color:var(--red);font-size:12px;margin-top:14px;display:none;background:rgba(239,68,68,.1);padding:8px;border-radius:6px;"></div>
+    <button class="btn btn-primary" style="width:100%; padding: 12px; font-size:15px;" id="loginBtn" onclick="handleLogin()">Sign In <span class="material-symbols-outlined" style="font-size:18px">login</span></button>
+    <div id="loginErr" style="color:var(--danger); font-size:12px; margin-top:16px; display:none; background:rgba(239,68,68,0.1); padding:10px; border-radius:8px;"></div>
   </div>
 </div>
 
-<div id="appContainer" style="display:none; flex-direction:column; height:100%;">
-  <header>
-    <div class="logo-wrap">
-      <div class="logo-top">GUI Technologies</div>
-      <div class="logo-main">BTech Repair</div>
-      <div class="logo-sub">Job Management System</div>
-    </div>
-    <div class="hdr-right">
-      <div class="sync-badge sync-ing" id="syncBadge" onclick="syncNow()" title="Click to sync">
-        <span class="sync-dot"></span>
-        <span id="syncText">Connecting...</span>
+<div id="appContainer">
+  <div class="layout-wrapper">
+    
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand-area">
+        <div class="brand-sub">GUI Technologies</div>
+        <div class="brand-title">BTech Repair</div>
       </div>
-      <button class="btn primary" onclick="openAddModal()">+ <span class="btn-txt">Add Job</span></button>
-      <button class="btn" style="border-color:var(--red);color:var(--red);" onclick="logout()"><span class="btn-txt">Logout</span> ⏏</button>
-    </div>
-  </header>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-val blue" id="s-total">—</div><div class="stat-label">Total Jobs</div></div>
-    <div class="stat"><div class="stat-val green" id="s-done">—</div><div class="stat-label">Done</div></div>
-    <div class="stat"><div class="stat-val yellow" id="s-pending">—</div><div class="stat-label">Pending</div></div>
-    <div class="stat" style="background:rgba(239,68,68,.1)"><div class="stat-val red" id="s-delayed">—</div><div class="stat-label">Delayed (>3 Days)</div></div>
-    <div class="stat"><div class="stat-val red" id="s-cant">—</div><div class="stat-label">Can't Repair</div></div>
-    <div class="stat"><div class="stat-val green" id="s-rev">—</div><div class="stat-label">Paid Revenue</div></div>
-    <div class="stat"><div class="stat-val red" id="s-outstanding">—</div><div class="stat-label">Outstanding</div></div>
-  </div>
-
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('jobs',this)">Jobs</div>
-    <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
-  </div>
-
-  <div id="tab-jobs">
-    <div class="toolbar">
-      <div class="search-wrap">
-        <span class="search-ico" onclick="document.getElementById('searchInput').focus();renderTable()" style="cursor:pointer">🔍</span>
-        <input type="text" id="searchInput" placeholder="Search job, customer, GN, repair..." oninput="renderTable();toggleSearchIcon()" onchange="toggleSearchIcon()">
+      <nav class="nav-menu">
+        <a class="nav-item active" data-tab="jobs" onclick="switchTab('jobs')">
+          <span class="material-symbols-outlined">laptop_mac</span> Jobs Dashboard
+        </a>
+        <a class="nav-item" data-tab="analytics" onclick="switchTab('analytics')">
+          <span class="material-symbols-outlined">bar_chart</span> Analytics
+        </a>
+      </nav>
+      <div class="user-area">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="width:32px; height:32px; border-radius:50%; background:var(--primary-grad); display:flex; align-items:center; justify-content:center; color:white; font-weight:700">A</div>
+          <div style="font-size:12px">
+            <div style="color:var(--text-main); font-weight:600">Admin</div>
+            <div style="color:var(--text-muted); font-size:10px">Online</div>
+          </div>
+        </div>
+        <button class="btn btn-icon" onclick="logout()" title="Logout" style="border:none; color:var(--danger)"><span class="material-symbols-outlined">logout</span></button>
       </div>
-      <select id="fStatus" onchange="renderTable()">
-        <option value="">All Repair Status</option>
-        <option>Done</option>
-        <option>Pending</option>
-        <option value="Delayed">⚠️ Delayed (>3 Days)</option>
-        <option>Can't Repair</option>
-      </select>
-      <select id="fPayment" onchange="renderTable()">
-        <option value="">All Payment</option>
-        <option>Paid</option><option>Not Paid</option>
-      </select>
-      <select id="fBrand" onchange="renderTable()">
-        <option value="">All Brands</option>
-        <option>Dell</option><option>HP</option><option>Lenovo</option>
-        <option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option>
-      </select>
-      <button class="btn" onclick="exportCSV()">⬇ CSV</button>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th onclick="sortBy('job_no')">Job No ↕</th>
-          <th>GN No</th>
-          <th onclick="sortBy('customer')">Customer ↕</th>
-          <th>Brand</th>
-          <th>Model</th>
-          <th>Repair</th>
-          <th onclick="sortBy('send_date')">Send Date ↕</th>
-          <th>Received</th>
-          <th>Days</th>
-          <th onclick="sortBy('charge')">Charge ↕</th>
-          <th onclick="sortBy('status')">Repair ↕</th>
-          <th onclick="sortBy('payment_status')">Payment ↕</th>
-          <th></th>
-        </tr></thead>
-        <tbody id="jobsBody"></tbody>
-      </table>
-      <div id="emptyState" class="empty" style="display:none">
-        <div class="empty-ico">🔧</div>
-        <div>No jobs found</div>
-      </div>
-      <div id="loadingState" class="empty">
-        <div class="spinner"></div>
-        <div style="margin-top:10px;font-size:12px">Loading jobs...</div>
-      </div>
-    </div>
-    <div class="pagination" id="paginationBar"></div>
-  </div>
+    </aside>
 
-  <div id="tab-analytics" style="display:none">
-    <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">Jobs by Brand</div><div id="cBrand"></div></div>
-      <div class="chart-card"><div class="chart-title">Repair Types</div><div id="cRepair"></div></div>
-      <div class="chart-card"><div class="chart-title">Monthly Revenue (LKR)</div><div class="rev-list" id="cRevenue"></div></div>
-      <div class="chart-card"><div class="chart-title">Repair Status</div><div id="cStatus"></div></div>
-      <div class="chart-card"><div class="chart-title">Payment Status</div><div id="cPayment"></div></div>
-      <div class="chart-card"><div class="chart-title">Avg Turnaround by Month</div><div class="rev-list" id="cTurnaround"></div></div>
-    </div>
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header>
+        <div>
+          <h2 id="pageTitle" style="font-size:18px; font-weight:600;">Dashboard</h2>
+        </div>
+        <div class="header-actions">
+          <div class="sync-badge bg-blue" id="syncBadge" onclick="syncNow()">
+            <span class="material-symbols-outlined">sync</span> <span class="hide-mob" id="syncText">Connected</span>
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">
+            <span class="material-symbols-outlined">add</span> <span class="hide-mob">New Job</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="tab-jobs">
+        <!-- STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info"><span class="stat-label">Total Jobs</span><span class="stat-value txt-blue" id="s-total">0</span></div>
+            <div class="stat-icon bg-blue"><span class="material-symbols-outlined">work</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info"><span class="stat-label">Completed</span><span class="stat-value txt-green" id="s-done">0</span></div>
+            <div class="stat-icon bg-green"><span class="material-symbols-outlined">task_alt</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info"><span class="stat-label">Pending</span><span class="stat-value txt-amber" id="s-pending">0</span></div>
+            <div class="stat-icon bg-amber"><span class="material-symbols-outlined">pending_actions</span></div>
+          </div>
+          <div class="stat-card" style="border-color: rgba(239, 68, 68, 0.3);">
+            <div class="stat-info"><span class="stat-label txt-red">Delayed (>3d)</span><span class="stat-value txt-red" id="s-delayed">0</span></div>
+            <div class="stat-icon bg-red"><span class="material-symbols-outlined">warning</span></div>
+          </div>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+          <div class="search-box">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" id="searchInput" placeholder="Search by Job No, Customer, SN..." oninput="renderTable()">
+          </div>
+          <select id="fStatus" onchange="renderTable()" style="width:auto">
+            <option value="">All Status</option><option>Done</option><option>Pending</option><option value="Delayed">⚠️ Delayed</option><option>Can't Repair</option>
+          </select>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr>
+                <th onclick="sortBy('job_no')">Job No ↕</th>
+                <th onclick="sortBy('customer')">Customer ↕</th>
+                <th>Brand / Model</th>
+                <th>Repair Issue</th>
+                <th onclick="sortBy('send_date')">Send Date ↕</th>
+                <th>Charge</th>
+                <th onclick="sortBy('status')">Status ↕</th>
+                <th>Payment</th>
+                <th>Actions</th>
+              </tr></thead>
+              <tbody id="jobsBody"></tbody>
+            </table>
+            
+            <div id="loadingState" class="empty-state">
+              <div class="spinner"></div><div style="margin-top:16px">Loading Database...</div>
+            </div>
+            <div id="emptyState" class="empty-state" style="display:none">
+              <span class="material-symbols-outlined">inbox</span><br>No jobs found.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-analytics" style="display:none; padding: 24px;">
+        <div class="empty-state">
+          <span class="material-symbols-outlined" style="font-size:64px; color:var(--primary)">monitoring</span>
+          <h2>Analytics Dashboard</h2>
+          <p style="margin-top:10px; color:var(--text-muted)">Detailed charts and reports will appear here soon.</p>
+        </div>
+      </div>
+    </main>
   </div>
+  
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav">
+    <div class="mob-nav-item active" data-tab="jobs" onclick="switchTab('jobs')">
+      <span class="material-symbols-outlined">dashboard</span>Jobs
+    </div>
+    <div class="mob-nav-item" data-tab="analytics" onclick="switchTab('analytics')">
+      <span class="material-symbols-outlined">insights</span>Stats
+    </div>
+    <div class="mob-nav-item" onclick="logout()" style="color:var(--danger)">
+      <span class="material-symbols-outlined">logout</span>Logout
+    </div>
+  </nav>
 </div>
 
 <!-- ADD/EDIT MODAL -->
 <div class="overlay" id="modalOverlay">
   <div class="modal">
-    <div class="modal-title">
-      <span id="modalTitle">Add New Job</span>
-      <button class="close-btn" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add New Job</div>
+      <button class="close-btn" onclick="closeModal()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="form-grid">
-      <div><label>Job No</label><input type="number" id="f-job_no" placeholder="e.g. 4230"></div>
-      <div><label>GN No</label><input type="text" id="f-gn_no" placeholder="e.g. GN2400"></div>
-      <div><label>Customer Name</label><input type="text" id="f-customer" placeholder="Full name"></div>
+      <div><label>Job No</label><input type="number" id="f-job_no" placeholder="4230"></div>
+      <div><label>GN No</label><input type="text" id="f-gn_no" placeholder="GN2400"></div>
+      <div><label>Customer Name *</label><input type="text" id="f-customer" placeholder="Full name"></div>
       <div><label>Send Date</label><input type="date" id="f-send_date"></div>
-      <div><label>Brand</label>
-        <select class="field" id="f-brand">
-          <option value="">Select brand</option>
-          <option>Dell</option><option>HP</option><option>Lenovo</option>
-          <option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option><option>Other</option>
+      <div><label>Brand *</label>
+        <select id="f-brand">
+          <option value="">Select Brand</option><option>Dell</option><option>HP</option><option>Lenovo</option><option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option><option>Other</option>
         </select>
       </div>
-      <div><label>Model</label><input type="text" id="f-model" placeholder="e.g. P112F"></div>
-      <div class="form-full">
-        <label>Serial Number</label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" id="f-serial_no" placeholder="Scan or type serial number..." style="flex:1;font-family:var(--mono);letter-spacing:.04em">
-          <button class="btn" type="button" onclick="openScanner()" title="Scan barcode/QR" style="padding:8px 12px;flex-shrink:0;font-size:16px">📷</button>
-        </div>
-      </div>
-      <div class="form-full"><label>Repair / Fault</label><textarea id="f-repair" placeholder="Describe the issue..."></textarea></div>
-      <div><label>Received Date</label><input type="date" id="f-received_date"></div>
-      <div><label>Charge (LKR)</label><input type="number" id="f-charge" placeholder="e.g. 3500"></div>
+      <div><label>Model</label><input type="text" id="f-model" placeholder="P112F"></div>
+      <div class="form-full"><label>Serial Number</label><input type="text" id="f-serial_no" style="font-family:var(--font-mono)"></div>
+      <div class="form-full"><label>Repair / Fault *</label><textarea id="f-repair" placeholder="Describe the issue..."></textarea></div>
+      <div><label>Charge (LKR)</label><input type="number" id="f-charge" placeholder="0.00"></div>
       <div><label>Repair Status</label>
-        <select class="field" id="f-status">
-          <option>Pending</option><option>Done</option><option>Can't Repair</option>
-        </select>
+        <select id="f-status"><option>Pending</option><option>Done</option><option>Can't Repair</option></select>
       </div>
       <div><label>Payment Status</label>
-        <select class="field" id="f-payment_status">
-          <option>Not Paid</option><option>Paid</option>
-        </select>
+        <select id="f-payment_status"><option>Not Paid</option><option>Paid</option></select>
       </div>
-      <div><label>Pay Date</label><input type="date" id="f-pay_date"></div>
-      <div><label>Payment Method</label>
-        <select class="field" id="f-payment_method">
-          <option>Cash</option>
-          <option>Bank Transfer</option>
-        </select>
-      </div>
-      <div><label>Returned Date (BTech ඉඳන් ආපු දිනය)</label><input type="date" id="f-returned_date"></div>
-      <div class="form-full"><label>Repair Updates / Notes</label>
-        <textarea id="f-repair_updates" placeholder="Repair progress, parts used, updates..."></textarea>
-      </div>
-      <div class="form-full"><label>Extra Notes</label><input type="text" id="f-notes" placeholder="Any extra notes..."></div>
+      <div><label>Returned Date</label><input type="date" id="f-returned_date"></div>
     </div>
-    <div class="form-actions">
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid var(--surface2); padding-top:16px;">
       <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn primary" onclick="saveJob()" id="saveBtn">Save Job</button>
+      <button class="btn btn-primary" onclick="saveJob()" id="saveBtn"><span class="material-symbols-outlined" style="font-size:18px">save</span> Save Data</button>
     </div>
   </div>
 </div>
 
 <!-- VIEW MODAL -->
 <div class="overlay" id="viewOverlay">
-  <div class="modal">
-    <div class="modal-title">
-      <span id="viewTitle">Job Details</span>
-      <button class="close-btn" onclick="closeView()">✕</button>
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div class="modal-title" id="viewTitle">Job Details</div>
+      <button class="close-btn" onclick="closeView()"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <div id="viewBody"></div>
-    <div class="form-actions">
-      <button class="btn" style="border-color:var(--red);color:var(--red)" id="vDelBtn">🗑 Delete</button>
-      <button class="btn" onclick="closeView()">Close</button>
-      <button class="btn" id="vPrintBtn">🖨 Print</button>
-      <button class="btn primary" id="vEditBtn">✏ Edit</button>
+    <div id="viewBody" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid var(--surface2); padding-top:16px;">
+      <button class="btn" style="color:var(--danger); border-color:var(--danger)" id="vDelBtn"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>
+      <button class="btn" id="vEditBtn"><span class="material-symbols-outlined" style="font-size:16px">edit</span> Edit</button>
     </div>
   </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<!-- SCANNER MODAL -->
-<div class="overlay" id="scannerOverlay">
-  <div class="modal" style="max-width:420px;text-align:center">
-    <div class="modal-title">
-      <span>📷 Scan Serial Number</span>
-      <button class="close-btn" onclick="closeScanner()">✕</button>
-    </div>
-    <div style="position:relative;width:100%;background:#000;border-radius:8px;overflow:hidden;margin-bottom:14px">
-      <video id="scanVideo" style="width:100%;height:280px;object-fit:cover;display:block"></video>
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
-        <div style="width:80%;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:scanLine 2s ease-in-out infinite"></div>
-      </div>
-      <canvas id="scanCanvas" style="display:none"></canvas>
-    </div>
-    <div id="scanStatus" style="font-size:13px;color:var(--t2);margin-bottom:12px">Camera initializing...</div>
-    <div style="margin-bottom:14px">
-      <label style="margin-bottom:6px">Or type manually:</label>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="manualSerial" placeholder="Type serial here..." style="flex:1">
-        <button class="btn primary" onclick="applyManualSerial()">Apply</button>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="toast" id="toast"><span class="material-symbols-outlined" id="toastIcon">info</span> <span id="toastMsg">Message</span></div>
 
 <script>
-// --- SUPABASE SETTINGS ---
+// --- SUPABASE & TELEGRAM SETTINGS ---
 const SUPA_URL = 'https://mkdylncwtijbvishocse.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZHlsbmN3dGlqYnZpc2hvY3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDU1NDQsImV4cCI6MjEwNTYyMTU0NH0.PB2c2jGBlnAONC3tg79yl-FvSw88RUZ_Q9N5_ngbqRc';
-
-// --- TELEGRAM SETTINGS ---
 const TELEGRAM_TOKEN = '8611024648:AAE_A54FA-ksq-3ZwRxFRaw5887y0QK49sk';
-
-// ඔයාගේ සහ අලුත් කෙනාගේ Chat IDs මෙතන එකතු කරලා තියෙන්නේ
-const TELEGRAM_CHAT_IDS = [
-  '8990461615',
-  '6363002948'
-];
+const TELEGRAM_CHAT_IDS = ['8990461615', '6363002948'];
 
 let sessionToken = localStorage.getItem('btech_auth_token');
 let allJobs = [];
 let sortField = 'job_no', sortDir = -1;
-let currentPage = 1;
-const PAGE = 25;
 let editingId = null;
 
-// --- TELEGRAM MESSAGE FUNCTION ---
+// --- TELEGRAM ---
 async function sendTelegramAlert(messageText) {
   for (const chatId of TELEGRAM_CHAT_IDS) {
     if (!chatId) continue;
-    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
     try {
-      await fetch(url, {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ chat_id: chatId.trim(), text: messageText, parse_mode: 'HTML' })
       });
-    } catch(e) { console.error('Telegram Error:', e); }
+    } catch(e) {}
   }
 }
 
-// දිනකට වරක් පරක්කු වූ ලැප්ටොප් ගැන මැසේජ් එක යැවීම
-function checkAndSendDelayedTelegramAlert() {
-  const delayedJobs = allJobs.filter(j => isJobDelayed(j));
-  if (delayedJobs.length === 0) return; // පරක්කු ඒවා නැත්නම් යවන්න එපා
-
-  const todayStr = new Date().toISOString().slice(0,10);
-  const lastAlertDate = localStorage.getItem('btech_last_tg_alert');
-
-  // අද දවසේ තාම මැසේජ් එක යවලා නැත්නම් විතරක් යවන්න
-  if (lastAlertDate !== todayStr) {
-    let text = `⚠️ <b>අවධානයට! පරක්කු වූ ලැප්ටොප් ${delayedJobs.length}ක් ඇත</b>\n\n`;
-    delayedJobs.forEach(j => {
-      const d = Math.floor((new Date() - new Date(j.send_date))/86400000);
-      text += `▪️ <b>#${j.job_no || '-'}</b>: ${j.customer} <i>(${d} Days Delayed)</i>\n`;
-    });
-    text += `\nකරුණාකර BTech ආයතනයෙන් විමසන්න.`;
-    
-    sendTelegramAlert(text);
-    localStorage.setItem('btech_last_tg_alert', todayStr); // අද යැව්වා කියලා සේව් කරගන්නවා
-  }
-}
-
-// --- AUTHENTICATION ---
+// --- AUTH & FETCH ---
 function checkAuth() {
   if (!sessionToken) {
     document.getElementById('loginOverlay').style.display = 'flex';
     document.getElementById('appContainer').style.display = 'none';
   } else {
     document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('appContainer').style.display = 'flex';
+    document.getElementById('appContainer').style.display = 'block';
     loadJobs();
   }
 }
 
 async function handleLogin() {
-  const email = document.getElementById('loginEmail').value;
-  const pass = document.getElementById('loginPass').value;
-  const btn = document.getElementById('loginBtn');
-  const err = document.getElementById('loginErr');
+  const email = document.getElementById('loginEmail').value, pass = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn'), err = document.getElementById('loginErr');
   err.style.display = 'none';
-
-  if(!email || !pass) { err.textContent = 'Please enter email and password'; err.style.display = 'block'; return; }
-
-  btn.textContent = 'Logging in...';
+  if(!email || !pass) { err.textContent = 'Please enter details'; err.style.display = 'block'; return; }
+  btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span>';
   try {
     const res = await fetch(SUPA_URL + '/auth/v1/token?grant_type=password', {
-      method: 'POST',
-      headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: pass })
+      method: 'POST', headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error_description || data.msg || 'Invalid Login Details');
-    
-    sessionToken = data.access_token;
-    localStorage.setItem('btech_auth_token', sessionToken);
-    checkAuth();
-  } catch (e) {
-    err.textContent = e.message;
-    err.style.display = 'block';
-  }
-  btn.textContent = 'Sign In';
+    if (!res.ok) throw new Error('Invalid Login Details');
+    sessionToken = data.access_token; localStorage.setItem('btech_auth_token', sessionToken); checkAuth();
+  } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+  btn.innerHTML = 'Sign In <span class="material-symbols-outlined">login</span>';
 }
 
-function logout() {
-  sessionToken = null;
-  localStorage.removeItem('btech_auth_token');
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPass').value = '';
-  checkAuth();
-}
+function logout() { sessionToken = null; localStorage.removeItem('btech_auth_token'); checkAuth(); }
 
 async function sbFetch(path, opts={}) {
-  const authHeader = sessionToken ? 'Bearer ' + sessionToken : 'Bearer ' + SUPA_KEY;
   const r = await fetch(SUPA_URL + '/rest/v1/' + path, {
-    headers: { 'apikey': SUPA_KEY, 'Authorization': authHeader, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-    ...opts
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + sessionToken, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }, ...opts
   });
-  if (!r.ok) { 
-    if(r.status === 401 || r.status === 403) { logout(); throw new Error('Session Expired. Please login again.'); }
-    const e = await r.text(); throw new Error(e); 
-  }
+  if (!r.ok) { if(r.status===401) logout(); throw new Error('DB Error'); }
   return r.status === 204 ? null : r.json();
 }
 
-function toggleSearchIcon(){
-  const icon = document.querySelector('.search-ico');
-  const input = document.getElementById('searchInput');
-  if(input.value.trim() === ''){ icon.style.display=''; input.placeholder='Search job, customer, GN, repair...'; } 
-  else { icon.style.display='none'; input.placeholder=''; }
-}
-
-// දවස් 3ට වඩා පරක්කුද කියලා බලන Function එක
+// --- CORE LOGIC ---
 function isJobDelayed(job) {
   if (job.status !== 'Pending' || !job.send_date) return false;
-  const sendDate = new Date(job.send_date);
-  const today = new Date();
-  const diffDays = Math.floor((today - sendDate) / (1000 * 60 * 60 * 24));
-  return diffDays > 3;
+  return Math.floor((new Date() - new Date(job.send_date)) / 86400000) > 3;
 }
 
 async function loadJobs() {
-  setSyncBadge('ing','Loading...');
-  document.getElementById('loadingState').style.display='';
-  document.getElementById('emptyState').style.display='none';
-  document.getElementById('jobsBody').innerHTML='';
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('jobsBody').innerHTML = '';
   try {
     allJobs = await sbFetch('jobs?select=*&order=job_no.desc&limit=1000');
-    setSyncBadge('ok','Synced ✓');
-    document.getElementById('loadingState').style.display='none';
-    updateStats();
-    renderTable();
-    checkAndSendDelayedTelegramAlert(); // Telegram මැසේජ් එක යැවීමේ Function එක
-  } catch(e) {
-    setSyncBadge('err','Offline');
-    document.getElementById('loadingState').style.display='none';
-    document.getElementById('emptyState').style.display='';
-    document.getElementById('emptyState').innerHTML='<div class="empty-ico">⚠️</div><div style="color:var(--red)">Connection Failed.<br><small style="color:var(--t3)">Check internet &amp; refresh page.</small></div>';
-  }
+    document.getElementById('loadingState').style.display = 'none';
+    updateStats(); renderTable();
+  } catch(e) { showToast('Sync Failed', 'err'); }
 }
 
-async function syncNow() { await loadJobs(); showToast('Synced!','ok'); }
+async function syncNow() { document.getElementById('syncText').textContent='Syncing...'; await loadJobs(); document.getElementById('syncText').textContent='Connected'; showToast('Database Synced', 'ok'); }
 
 function updateStats() {
-  const t    = allJobs.length;
-  const done = allJobs.filter(j=>j.status==='Done').length;
-  const pend = allJobs.filter(j=>j.status==='Pending').length;
-  const cant = allJobs.filter(j=>j.status==="Can't Repair").length;
-  const delayed = allJobs.filter(j=>isJobDelayed(j)).length;
-  const paid = allJobs.filter(j=>(j.payment_status||'Not Paid')==='Paid').length;
-  const rev  = allJobs.filter(j=>j.charge>0&&(j.payment_status||'Not Paid')==='Paid').reduce((a,j)=>a+j.charge,0);
-  const outstanding = allJobs.filter(j=>j.charge>0&&(j.payment_status||'Not Paid')==='Not Paid').reduce((a,j)=>a+j.charge,0);
-  
-  document.getElementById('s-total').textContent   = t;
-  document.getElementById('s-done').textContent    = done;
-  document.getElementById('s-pending').textContent = pend;
-  document.getElementById('s-delayed').textContent = delayed;
-  document.getElementById('s-cant').textContent    = cant;
-  document.getElementById('s-rev').textContent     = 'Rs.'+rev.toLocaleString();
-  document.getElementById('s-outstanding').textContent = outstanding>0?'Rs.'+outstanding.toLocaleString():'Rs.0';
-}
-
-function getFiltered() {
-  const q  = document.getElementById('searchInput').value.toLowerCase();
-  const fs = document.getElementById('fStatus').value;
-  const fb = document.getElementById('fBrand').value;
-  const fp = document.getElementById('fPayment').value;
-  
-  return allJobs.filter(j=>{
-    const txt = [j.job_no,j.gn_no,j.customer,j.model,j.repair,j.serial_no].join(' ').toLowerCase();
-    if (q && !txt.includes(q)) return false;
-    if (fs === 'Delayed') { if (!isJobDelayed(j)) return false; } 
-    else if (fs && j.status!==fs) return false;
-    if (fb && j.brand!==fb) return false;
-    if (fp && (j.payment_status||'Not Paid')!==fp) return false;
-    return true;
-  }).sort((a,b)=>{
-    let av=a[sortField]||'', bv=b[sortField]||'';
-    if (sortField==='job_no'||sortField==='charge'){av=+av;bv=+bv;}
-    return av<bv?-sortDir:av>bv?sortDir:0;
-  });
+  document.getElementById('s-total').textContent = allJobs.length;
+  document.getElementById('s-done').textContent = allJobs.filter(j=>j.status==='Done').length;
+  document.getElementById('s-pending').textContent = allJobs.filter(j=>j.status==='Pending').length;
+  document.getElementById('s-delayed').textContent = allJobs.filter(isJobDelayed).length;
 }
 
 function renderTable() {
-  const filtered = getFiltered();
-  const pages = Math.max(1,Math.ceil(filtered.length/PAGE));
-  if (currentPage>pages) currentPage=1;
-  const page = filtered.slice((currentPage-1)*PAGE, currentPage*PAGE);
-  const tbody = document.getElementById('jobsBody');
-  const empty = document.getElementById('emptyState');
-  document.getElementById('loadingState').style.display='none';
-  tbody.innerHTML='';
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const fs = document.getElementById('fStatus').value;
   
-  if(page.length===0){ empty.style.display=''; empty.innerHTML='<div class="empty-ico">🔧</div><div>No jobs found</div>'; } 
-  else { empty.style.display='none'; }
-  
-  page.forEach(j=>{
+  let filtered = allJobs.filter(j => {
+    if (q && ![j.job_no, j.customer, j.serial_no].join(' ').toLowerCase().includes(q)) return false;
+    if (fs === 'Delayed') { if (!isJobDelayed(j)) return false; } else if (fs && j.status !== fs) return false;
+    return true;
+  }).sort((a,b)=>{ let av=a[sortField]||'', bv=b[sortField]||''; if(sortField==='job_no') {av=+av;bv=+bv;} return av<bv?-sortDir:av>bv?sortDir:0; });
+
+  const tbody = document.getElementById('jobsBody'); tbody.innerHTML = '';
+  document.getElementById('emptyState').style.display = filtered.length === 0 ? 'block' : 'none';
+
+  filtered.forEach(j => {
     const delayed = isJobDelayed(j);
-    const tr=document.createElement('tr');
+    const tr = document.createElement('tr');
     if (delayed) tr.className = 'delayed-row';
     
-    tr.innerHTML=`
-      <td class="job-no">#${j.job_no||'—'}</td>
-      <td class="gn">${j.gn_no||'—'}</td>
-      <td class="cust">${j.customer||'—'}</td>
-      <td><span class="brand ${(j.brand||'other').toLowerCase()}">${j.brand||'—'}</span></td>
-      <td class="model-c" title="${j.model||''}">${j.model||'—'}</td>
-      <td class="repair-c" title="${j.repair||''}">${j.repair||'—'}</td>
-      <td class="date-c">${fd(j.send_date)}</td>
-      <td class="date-c">${fd(j.received_date)}</td>
-      <td class="days-c">${ta(j.send_date,j.received_date)}</td>
-      <td class="charge-c">${j.charge?'Rs.'+j.charge.toLocaleString():'—'}</td>
-      <td>${repairBadge(j.status, delayed)}</td>
-      <td>${payBadge(j.payment_status)}</td>
-      <td><button class="btn" style="padding:4px 7px;font-size:11px" onclick="viewJob(${j.id})">👁</button>
-          <button class="btn" style="padding:4px 7px;font-size:11px" onclick="openEditModal(${j.id})">✏</button></td>`;
+    let sBadge = '', pBadge = '';
+    if(delayed) sBadge = `<span class="status-badge badge-solid-red"><span class="material-symbols-outlined">warning</span>Delayed</span>`;
+    else if(j.status==='Done') sBadge = `<span class="status-badge bg-green"><span class="material-symbols-outlined">check_circle</span>Done</span>`;
+    else if(j.status==='Pending') sBadge = `<span class="status-badge bg-amber"><span class="material-symbols-outlined">schedule</span>Pending</span>`;
+    else sBadge = `<span class="status-badge bg-red"><span class="material-symbols-outlined">cancel</span>Can't Fix</span>`;
+
+    if(j.payment_status==='Paid') pBadge = `<span class="status-badge bg-blue"><span class="material-symbols-outlined">payments</span>Paid</span>`;
+    else pBadge = `<span style="color:var(--text-muted);font-size:12px;font-weight:600">Unpaid</span>`;
+
+    tr.innerHTML = `
+      <td style="font-weight:700; color:var(--primary)">#${j.job_no||'-'}</td>
+      <td style="font-weight:600">${j.customer||'-'}</td>
+      <td>
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase">${j.brand||'-'}</div>
+        <div>${j.model||'-'}</div>
+      </td>
+      <td style="color:var(--text-muted); max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${j.repair}">${j.repair||'-'}</td>
+      <td><span style="font-family:var(--font-mono); font-size:12px">${j.send_date||'-'}</span></td>
+      <td style="font-weight:600; color:var(--success)">${j.charge ? 'Rs.'+j.charge.toLocaleString() : '-'}</td>
+      <td>${sBadge}</td>
+      <td>${pBadge}</td>
+      <td>
+        <div style="display:flex; gap:6px">
+          <button class="btn btn-icon" style="padding:4px" onclick="viewJob(${j.id})"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
+          <button class="btn btn-icon" style="padding:4px" onclick="openEditModal(${j.id})"><span class="material-symbols-outlined" style="font-size:18px">edit</span></button>
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
-  renderPages(filtered.length, pages);
 }
 
-function fd(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y.slice(2)}`;}
-function ta(s,r){
-  if(!s||!r)return'—';
-  const d=Math.round((new Date(r)-new Date(s))/86400000);
-  if(isNaN(d)||d<0)return'—';
-  return d===0?'Same':d+'d';
+function sortBy(f) { sortField=f; sortDir*=-1; renderTable(); }
+
+// --- UI / MODALS ---
+function switchTab(name) {
+  document.querySelectorAll('.nav-item, .mob-nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll(`[data-tab="${name}"]`).forEach(el => el.classList.add('active'));
+  document.getElementById('tab-jobs').style.display = name==='jobs' ? 'block' : 'none';
+  document.getElementById('tab-analytics').style.display = name==='analytics' ? 'block' : 'none';
+  document.getElementById('pageTitle').textContent = name==='jobs' ? 'Jobs Dashboard' : 'Analytics';
 }
 
-function repairBadge(s, isDelayed){
-  if (isDelayed) return `<span class="badge delayed"><span class="bdot"></span>⚠️ Delayed</span>`;
-  const m={'Done':'done','Pending':'pending',"Can't Repair":'cant'};
-  const icons={'Done':'✓','Pending':'⏳',"Can't Repair":'✕'};
-  const cls=m[s]||'pending';
-  return `<span class="badge ${cls}"><span class="bdot"></span>${icons[s]||''}${s||'Pending'}</span>`;
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = type === 'ok' ? 'check_circle' : 'error';
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 3000);
 }
 
-function payBadge(s){
-  if(s==='Paid') return`<span class="badge paid"><span class="bdot"></span>💰 Paid</span>`;
-  return`<span class="badge" style="background:rgba(239,68,68,.12);color:var(--red)"><span class="bdot"></span>Not Paid</span>`;
-}
-
-function renderPages(total,pages){
-  const bar=document.getElementById('paginationBar'); bar.innerHTML=''; const max=5;
-  let start=Math.max(1,currentPage-2), end=Math.min(pages,start+max-1);
-  if(end-start<max-1) start=Math.max(1,end-max+1);
-  if(start>1){const b=document.createElement('button');b.className='page-btn';b.textContent='1';b.onclick=()=>{currentPage=1;renderTable()};bar.appendChild(b);}
-  if(start>2){const s=document.createElement('span');s.textContent='…';s.style.cssText='color:var(--t3);padding:0 4px';bar.appendChild(s);}
-  for(let i=start;i<=end;i++){const b=document.createElement('button');b.className='page-btn'+(i===currentPage?' active':'');b.textContent=i;b.onclick=(()=>{const p=i;return()=>{currentPage=p;renderTable()}})();bar.appendChild(b);}
-  if(end<pages-1){const s=document.createElement('span');s.textContent='…';s.style.cssText='color:var(--t3);padding:0 4px';bar.appendChild(s);}
-  if(end<pages){const b=document.createElement('button');b.className='page-btn';b.textContent=pages;b.onclick=()=>{currentPage=pages;renderTable()};bar.appendChild(b);}
-  const info=document.createElement('span');info.className='page-info';info.textContent=total+' jobs';bar.appendChild(info);
-}
-
-function sortBy(f){if(sortField===f)sortDir*=-1;else{sortField=f;sortDir=-1;}renderTable();}
-
-function openAddModal(){
-  editingId=null; document.getElementById('modalTitle').textContent='Add New Job';
-  clearForm(); document.getElementById('modalOverlay').classList.add('open');
-}
+function openAddModal(){ editingId=null; document.getElementById('modalTitle').textContent='Add New Job'; clearForm(); document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+function clearForm(){ ['job_no','gn_no','customer','send_date','brand','model','serial_no','repair','charge','returned_date'].forEach(k=>document.getElementById('f-'+k).value=''); document.getElementById('f-status').value='Pending'; document.getElementById('f-payment_status').value='Not Paid'; }
 
 function openEditModal(id){
-  const j=allJobs.find(x=>x.id===id); if(!j)return;
+  const j = allJobs.find(x=>x.id===id); if(!j) return;
   editingId=id; document.getElementById('modalTitle').textContent='Edit Job #'+j.job_no;
-  ['job_no','gn_no','customer','send_date','brand','model','serial_no','repair','received_date','charge','status','payment_status','pay_date','payment_method','returned_date','repair_updates','notes'].forEach(k => {
-    const el = document.getElementById('f-'+k); if(el) el.value = j[k] || '';
-  });
-  if(!j.status) document.getElementById('f-status').value = 'Pending';
-  if(!j.payment_status) document.getElementById('f-payment_status').value = 'Not Paid';
-  if(!j.payment_method) document.getElementById('f-payment_method').value = 'Cash';
+  ['job_no','gn_no','customer','send_date','brand','model','serial_no','repair','charge','returned_date','status','payment_status'].forEach(k => { if(document.getElementById('f-'+k)) document.getElementById('f-'+k).value = j[k] || ''; });
   closeView(); document.getElementById('modalOverlay').classList.add('open');
 }
 
-function clearForm(){
-  ['f-job_no','f-gn_no','f-customer','f-send_date','f-brand','f-model','f-serial_no','f-repair','f-received_date','f-charge','f-pay_date','f-notes','f-returned_date','f-repair_updates'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('f-status').value='Pending'; document.getElementById('f-payment_status').value='Not Paid'; document.getElementById('f-payment_method').value='Cash';
-}
-
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
-
 async function saveJob(){
-  const customerName = document.getElementById('f-customer').value.trim();
-  const brandName = document.getElementById('f-brand').value;
-  const repairType = document.getElementById('f-repair').value.trim();
-
-  if (!customerName || !brandName || !repairType) { showToast('Customer Name, Brand, Repair අනිවාර්යයි!', 'err'); return; }
-
-  const btn=document.getElementById('saveBtn'); btn.textContent='Saving...'; btn.disabled=true;
-  const body={
-    job_no:+document.getElementById('f-job_no').value||null, gn_no:document.getElementById('f-gn_no').value.trim()||null,
-    customer: customerName, send_date:document.getElementById('f-send_date').value||null,
-    brand: brandName, model:document.getElementById('f-model').value.trim()||null,
-    serial_no:document.getElementById('f-serial_no').value.trim()||null, repair: repairType,
-    received_date:document.getElementById('f-received_date').value||null, charge:+document.getElementById('f-charge').value||0,
-    status:document.getElementById('f-status').value, payment_status:document.getElementById('f-payment_status').value,
-    pay_date:document.getElementById('f-pay_date').value||null, payment_method:document.getElementById('f-payment_method').value||'Cash',
-    returned_date:document.getElementById('f-returned_date').value||null, repair_updates:document.getElementById('f-repair_updates').value.trim()||null,
-    notes:document.getElementById('f-notes').value.trim()||null,
+  const body = {
+    job_no: +document.getElementById('f-job_no').value||null, customer: document.getElementById('f-customer').value.trim(),
+    brand: document.getElementById('f-brand').value, repair: document.getElementById('f-repair').value.trim(),
+    send_date: document.getElementById('f-send_date').value||null, charge: +document.getElementById('f-charge').value||0,
+    status: document.getElementById('f-status').value, payment_status: document.getElementById('f-payment_status').value,
+    gn_no: document.getElementById('f-gn_no').value||null, model: document.getElementById('f-model').value||null,
+    serial_no: document.getElementById('f-serial_no').value||null, returned_date: document.getElementById('f-returned_date').value||null
   };
+  if(!body.customer || !body.brand || !body.repair) return showToast('Customer, Brand, Repair required!', 'err');
+  
+  const btn = document.getElementById('saveBtn'); btn.innerHTML='<span class="spinner" style="width:14px;height:14px;border-width:2px"></span>';
   try {
-    if(editingId){ 
-      await sbFetch('jobs?id=eq.'+editingId,{method:'PATCH',body:JSON.stringify(body)}); 
-      showToast('Job updated ✓','ok'); 
-    } 
+    if(editingId){ await sbFetch('jobs?id=eq.'+editingId, {method:'PATCH', body:JSON.stringify(body)}); showToast('Job Updated', 'ok'); } 
     else { 
-      await sbFetch('jobs',{method:'POST',body:JSON.stringify(body)}); 
-      showToast('Job added ✓','ok'); 
-      
-      // අලුත් Job එකක් දැම්මම Telegram එකට මැසේජ් එක යැවීම
-      const newJobAlert = `🆕 <b>නව අලුත්වැඩියාවක් භාරගන්නා ලදී!</b>\n\nJob No: <b>#${body.job_no || '-'}</b>\nCustomer: ${body.customer}\nBrand: ${body.brand}\nRepair: ${body.repair}`;
-      sendTelegramAlert(newJobAlert);
+      await sbFetch('jobs', {method:'POST', body:JSON.stringify(body)}); showToast('Job Added', 'ok'); 
+      sendTelegramAlert(`🆕 <b>නව ලැප්ටොප් අලුත්වැඩියාවක්!</b>\n\nJob: <b>#${body.job_no||'-'}</b>\nCust: ${body.customer}\nBrand: ${body.brand}\nIssue: ${body.repair}`);
     }
-    closeModal(); await loadJobs();
-  } catch(e){showToast('Save failed: '+e.message,'err');}
-  btn.textContent='Save Job'; btn.disabled=false;
+    closeModal(); loadJobs();
+  } catch(e){ showToast('Error saving', 'err'); }
+  btn.innerHTML='<span class="material-symbols-outlined" style="font-size:18px">save</span> Save Data';
 }
 
 function viewJob(id){
-  const j=allJobs.find(x=>x.id===id); if(!j)return;
+  const j = allJobs.find(x=>x.id===id); if(!j) return;
   document.getElementById('viewTitle').textContent='Job #'+j.job_no;
-  document.getElementById('viewBody').innerHTML=`
-    <div class="detail-grid">
-      <div class="detail-item"><label>Job No</label><div class="val mono">#${j.job_no||'—'}</div></div>
-      <div class="detail-item"><label>GN No</label><div class="val mono">${j.gn_no||'—'}</div></div>
-      <div class="detail-item"><label>Customer</label><div class="val">${j.customer||'—'}</div></div>
-      <div class="detail-item"><label>Brand / Model</label><div class="val">${j.brand||'—'} ${j.model||''}</div></div>
-      <div class="detail-item"><label>Serial Number</label><div class="val mono" style="font-size:12px">${j.serial_no||'—'}</div></div>
-      <div class="detail-item"><label>Repair</label><div class="val">${j.repair||'—'}</div></div>
-      <div class="detail-item"><label>Repair Status</label><div class="val">${repairBadge(j.status, isJobDelayed(j))}</div></div>
-      <div class="detail-item"><label>Payment Status</label><div class="val">${payBadge(j.payment_status)}</div></div>
-      <div class="detail-item"><label>Send Date</label><div class="val mono">${fd(j.send_date)}</div></div>
-      <div class="detail-item"><label>Received Back</label><div class="val mono">${fd(j.received_date)}</div></div>
-      <div class="detail-item"><label>Charge</label><div class="val mono" style="color:var(--green)">${j.charge?'Rs.'+j.charge.toLocaleString():'—'}</div></div>
-      <div class="detail-item"><label>Pay Date</label><div class="val mono">${fd(j.pay_date)}</div></div>
-      ${j.repair_updates?`<div class="detail-item" style="grid-column:1/-1"><label>Repair Updates</label><div class="val" style="white-space:pre-wrap">${j.repair_updates}</div></div>`:''}
-      ${j.notes?`<div class="detail-item" style="grid-column:1/-1"><label>Notes</label><div class="val">${j.notes}</div></div>`:''}
+  document.getElementById('viewBody').innerHTML = `
+    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--surface2); padding-bottom:8px">
+      <span style="color:var(--text-muted)">Customer</span><strong style="font-size:16px">${j.customer||'-'}</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--surface2); padding-bottom:8px">
+      <span style="color:var(--text-muted)">Device</span><span>${j.brand||'-'} ${j.model||''}</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--surface2); padding-bottom:8px">
+      <span style="color:var(--text-muted)">SN</span><span style="font-family:var(--font-mono)">${j.serial_no||'-'}</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--surface2); padding-bottom:8px">
+      <span style="color:var(--text-muted)">Issue</span><span style="text-align:right; max-width:60%">${j.repair||'-'}</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--surface2); padding-bottom:8px">
+      <span style="color:var(--text-muted)">Status</span><span style="font-weight:600">${j.status}</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding-bottom:8px">
+      <span style="color:var(--text-muted)">Charge</span><strong style="color:var(--success); font-size:16px">Rs. ${j.charge||0}</strong>
     </div>`;
-  document.getElementById('vEditBtn').onclick=()=>openEditModal(id);
-  document.getElementById('vDelBtn').onclick=()=>deleteJob(id);
-  document.getElementById('vPrintBtn').onclick=()=>printJobSheet(id);
+  document.getElementById('vEditBtn').onclick = () => openEditModal(id);
+  document.getElementById('vDelBtn').onclick = async () => {
+    if(confirm('Delete job?')) { try { await sbFetch('jobs?id=eq.'+id, {method:'DELETE'}); closeView(); loadJobs(); showToast('Deleted', 'ok'); } catch(e){} }
+  };
   document.getElementById('viewOverlay').classList.add('open');
 }
-function closeView(){document.getElementById('viewOverlay').classList.remove('open');}
-async function deleteJob(id){
-  if(!confirm('Delete this job?'))return;
-  try{ await sbFetch('jobs?id=eq.'+id,{method:'DELETE'}); showToast('Job deleted','ok'); closeView(); await loadJobs(); }catch(e){showToast('Delete failed','err');}
-}
+function closeView(){ document.getElementById('viewOverlay').classList.remove('open'); }
 
-function renderAnalytics(){ /* Analytics code */ }
-function switchTab(name,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
-  document.getElementById('tab-jobs').style.display=name==='jobs'?'':'none';
-  document.getElementById('tab-analytics').style.display=name==='analytics'?'':'none';
-}
-function exportCSV(){ /* CSV code */ }
-function setSyncBadge(state,txt){ document.getElementById('syncBadge').className='sync-badge sync-'+state; document.getElementById('syncText').textContent=txt; }
-function showToast(msg,type='ok'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+(type==='err'?'err':'ok'); setTimeout(()=>t.className='toast',2500); }
-function printJobSheet(id) { const j = allJobs.find(x=>x.id===id); if(!j) return; window.open('','_blank','width=820,height=700').document.write(`<!DOCTYPE html><html><body><h1>Job #${j.job_no}</h1><button onclick="window.print()">Print</button></body></html>`); }
+// Click outside to close modals
+['modalOverlay','viewOverlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if(e.target===e.currentTarget) e.target.classList.remove('open'); });
+});
 
-let scanStream = null; let scanInterval = null;
-async function openScanner() { /* Scanner Code */ }
-function closeScanner() { /* Scanner Code */ }
-function applySerial(serial) { document.getElementById('f-serial_no').value = serial; showToast('Serial: ' + serial, 'ok'); closeScanner(); }
-function applyManualSerial() { const v = document.getElementById('manualSerial').value.trim(); if (v) applySerial(v); }
-['modalOverlay','viewOverlay','scannerOverlay'].forEach(id=>{ document.getElementById(id).addEventListener('click',e=>{ if(e.target===e.currentTarget){ if(id==='scannerOverlay') closeScanner(); else e.target.classList.remove('open'); } }); });
-
-checkAuth(); 
+checkAuth();
 </script>
 </body>
 </html>
