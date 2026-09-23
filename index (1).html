@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e2a45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BTech Repair">
+<meta name="application-name" content="BTech Repair">
+<title>BTech Repair – Job Tracker</title>
+
+<style>
+:root {
+  --bg:#0f1117; --s1:#181c27; --s2:#1f2335; --border:#2a2f45;
+  --accent:#4f8ef7; --accent2:#38bdf8; --green:#22c55e;
+  --yellow:#f59e0b; --red:#ef4444; --purple:#a78bfa;
+  --text:#e2e8f0; --t2:#94a3b8; --t3:#64748b;
+  --mono:'Courier New',Courier,monospace; --sans:system-ui,-apple-system,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+
+/* HEADER */
+header{background:var(--s1);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo-wrap{display:flex;flex-direction:column;gap:1px}
+.logo-top{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;}
+.logo-main{font-size:17px;font-weight:700;color:var(--text)}
+.logo-sub{font-size:10px;color:var(--t3)}
+.hdr-right{display:flex;gap:6px;align-items:center}
+
+/* SYNC STATUS */
+.sync-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.sync-ok{background:rgba(34,197,94,.15);color:var(--green)}
+.sync-err{background:rgba(239,68,68,.15);color:var(--red)}
+.sync-ing{background:rgba(79,142,247,.15);color:var(--accent)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.sync-ing .sync-dot{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.stat{background:var(--s1);padding:10px 14px}
+.stat-val{font-size:20px;font-weight:700;;color:var(--text)}
+.stat-val.green{color:var(--green)}.stat-val.yellow{color:var(--yellow)}.stat-val.red{color:var(--red)}.stat-val.blue{color:var(--accent)}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-top:2px}
+
+/* TABS */
+.tabs{display:flex;gap:2px;padding:0 16px;background:var(--s1);border-bottom:1px solid var(--border)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* TOOLBAR */
+.toolbar{padding:10px 16px;display:flex;gap:8px;align-items:center;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:160px}
+.search-wrap input{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:7px 10px 7px 30px;border-radius:6px;font-family:var(--sans);font-size:13px;outline:none}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px}
+select,.btn{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;cursor:pointer;outline:none;transition:background .15s}
+select:focus{border-color:var(--accent)}
+.btn{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:hover{background:var(--border)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primary:hover{background:#3b7de0}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--s1);padding:9px 10px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--accent)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--s2)}
+tbody td{padding:9px 10px;vertical-align:middle}
+td.job-no{;font-size:13px;font-weight:600;color:var(--accent2)}
+td.gn{;font-size:11px;color:var(--t3)}
+td.cust{font-weight:500}
+td.model-c{font-size:12px;color:var(--t2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.repair-c{font-size:12px;color:var(--t2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.charge-c{;font-size:13px;font-weight:600;color:var(--green)}
+td.date-c{;font-size:11px;color:var(--t3);white-space:nowrap}
+td.days-c{;font-size:11px;color:var(--t3);text-align:center}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.badge.done{background:rgba(34,197,94,.15);color:var(--green)}
+.badge.pending{background:rgba(245,158,11,.15);color:var(--yellow)}
+.badge.cant{background:rgba(239,68,68,.15);color:var(--red)}
+.badge.paid{background:rgba(79,142,247,.15);color:var(--accent)}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* BRAND */
+.brand{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;;text-transform:uppercase}
+.brand.dell{background:rgba(0,120,212,.2);color:#60a5fa}
+.brand.hp{background:rgba(0,163,151,.2);color:#34d399}
+.brand.lenovo{background:rgba(167,139,250,.2);color:var(--purple)}
+.brand.asus{background:rgba(245,158,11,.2);color:var(--yellow)}
+.brand.acer{background:rgba(34,197,94,.2);color:var(--green)}
+.brand.msi{background:rgba(239,68,68,.2);color:#f87171}
+.brand.sony{background:rgba(148,163,184,.2);color:#cbd5e1}
+.brand.other{background:rgba(100,116,139,.2);color:var(--t3)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:24px;width:540px;max-width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.close-btn{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;padding:2px 6px}
+.close-btn:hover{color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-full{grid-column:1/-1}
+label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:4px}
+input[type=text],input[type=date],input[type=number],textarea,select.field{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;outline:none}
+input:focus,textarea:focus,select.field:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px}
+.form-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+
+/* VIEW PANEL */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.detail-item label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:2px}
+.detail-item .val{font-size:13px;color:var(--text)}
+.detail-item .val.mono{}
+.sep{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+/* EMPTY / LOADING */
+.empty{text-align:center;padding:50px 20px;color:var(--t3)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PAGINATION */
+.pagination{display:flex;gap:5px;padding:12px 16px;align-items:center;flex-wrap:wrap}
+.page-btn{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+.page-btn:hover{border-color:var(--accent)}
+.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.page-info{color:var(--t3);font-size:12px;margin-left:auto}
+
+/* ANALYTICS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;padding:16px}
+.chart-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:18px}
+.chart-title{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-label{font-size:11px;color:var(--t2);min-width:90px;flex-shrink:0}
+.bar-track{flex:1;background:var(--s2);border-radius:4px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .4s}
+.bar-val{;font-size:10px;color:var(--t3);min-width:44px;text-align:right}
+.rev-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.rev-row:last-child{border-bottom:none}
+.rev-month{font-size:12px;color:var(--t2)}
+.rev-amt{;font-size:12px;font-weight:600;color:var(--green)}
+
+/* IMPORT MODAL */
+.import-status{margin-top:12px;padding:10px 12px;border-radius:6px;font-size:12px;display:none}
+.import-status.ok{background:rgba(34,197,94,.1);color:var(--green);display:block}
+.import-status.err{background:rgba(239,68,68,.1);color:var(--red);display:block}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat:nth-child(5),.stat:nth-child(6){display:none}
+  .form-grid{grid-template-columns:1fr}
+  .hdr-right .btn-txt{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-top">GUI Technologies</div>
+    <div class="logo-main">BTech Repair</div>
+    <div class="logo-sub">Job Management System</div>
+  </div>
+  <div class="hdr-right">
+    <div class="sync-badge sync-ing" id="syncBadge" onclick="syncNow()" title="Click to sync">
+      <span class="sync-dot"></span>
+      <span id="syncText">Connecting...</span>
+    </div>
+    <button class="btn" onclick="openImportModal()" title="Import all jobs">⬆ <span class="btn-txt">Import</span></button>
+    <button class="btn primary" onclick="openAddModal()">+ <span class="btn-txt">Add Job</span></button>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val blue" id="s-total">—</div><div class="stat-label">Total Jobs</div></div>
+  <div class="stat"><div class="stat-val green" id="s-done">—</div><div class="stat-label">Done / Paid</div></div>
+  <div class="stat"><div class="stat-val yellow" id="s-pending">—</div><div class="stat-label">Pending</div></div>
+  <div class="stat"><div class="stat-val red" id="s-cant">—</div><div class="stat-label">Can't Repair</div></div>
+  <div class="stat"><div class="stat-val green" id="s-rev">—</div><div class="stat-label">Total Revenue</div></div>
+  <div class="stat"><div class="stat-val blue" id="s-avg">—</div><div class="stat-label">Avg Days</div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('jobs',this)">Jobs</div>
+  <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
+</div>
+
+<div id="tab-jobs">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search job, customer, GN, repair..." oninput="renderTable()">
+    </div>
+    <select id="fStatus" onchange="renderTable()">
+      <option value="">All Status</option>
+      <option>Done</option><option>Pending</option><option>Paid</option><option>Can't Repair</option>
+    </select>
+    <select id="fBrand" onchange="renderTable()">
+      <option value="">All Brands</option>
+      <option>Dell</option><option>HP</option><option>Lenovo</option>
+      <option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option>
+    </select>
+    <button class="btn" onclick="exportCSV()">⬇ CSV</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th onclick="sortBy('job_no')">Job No ↕</th>
+        <th>GN No</th>
+        <th onclick="sortBy('customer')">Customer ↕</th>
+        <th>Brand</th>
+        <th>Model</th>
+        <th>Repair</th>
+        <th onclick="sortBy('send_date')">Send Date ↕</th>
+        <th>Received</th>
+        <th>Days</th>
+        <th onclick="sortBy('charge')">Charge ↕</th>
+        <th>Status</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="jobsBody"></tbody>
+    </table>
+    <div id="emptyState" class="empty" style="display:none">
+      <div class="empty-ico">🔧</div>
+      <div>No jobs found</div>
+    </div>
+    <div id="loadingState" class="empty">
+      <div class="spinner"></div>
+      <div style="margin-top:10px;font-size:12px">Loading jobs...</div>
+    </div>
+  </div>
+  <div class="pagination" id="paginationBar"></div>
+</div>
+
+<div id="tab-analytics" style="display:none">
+  <div class="charts-grid">
+    <div class="chart-card"><div class="chart-title">Jobs by Brand</div><div id="cBrand"></div></div>
+    <div class="chart-card"><div class="chart-title">Repair Types</div><div id="cRepair"></div></div>
+    <div class="chart-card"><div class="chart-title">Monthly Revenue (LKR)</div><div class="rev-list" id="cRevenue"></div></div>
+    <div class="chart-card"><div class="chart-title">Status Breakdown</div><div id="cStatus"></div></div>
+    <div class="chart-card"><div class="chart-title">Avg Turnaround by Month</div><div class="rev-list" id="cTurnaround"></div></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalTitle">Add New Job</span>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div><label>Job No</label><input type="number" id="f-job_no" placeholder="e.g. 4230"></div>
+      <div><label>GN No</label><input type="text" id="f-gn_no" placeholder="e.g. GN2400"></div>
+      <div><label>Customer Name</label><input type="text" id="f-customer" placeholder="Full name"></div>
+      <div><label>Send Date</label><input type="date" id="f-send_date"></div>
+      <div><label>Brand</label>
+        <select class="field" id="f-brand">
+          <option value="">Select brand</option>
+          <option>Dell</option><option>HP</option><option>Lenovo</option>
+          <option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option><option>Other</option>
+        </select>
+      </div>
+      <div><label>Model</label><input type="text" id="f-model" placeholder="e.g. P112F"></div>
+      <div class="form-full">
+        <label>Serial Number</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="f-serial_no" placeholder="Scan or type serial number..." style="flex:1;font-family:var(--mono);letter-spacing:.04em">
+          <button class="btn" type="button" onclick="openScanner()" title="Scan barcode/QR" style="padding:8px 12px;flex-shrink:0;font-size:16px">📷</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">USB barcode scanner use කරනවානම් field click කරලා scan කරන්න</div>
+      </div>
+      <div class="form-full"><label>Repair / Fault</label><textarea id="f-repair" placeholder="Describe the issue..."></textarea></div>
+      <div><label>Received Date</label><input type="date" id="f-received_date"></div>
+      <div><label>Charge (LKR)</label><input type="number" id="f-charge" placeholder="e.g. 3500"></div>
+      <div><label>Status</label>
+        <select class="field" id="f-status">
+          <option>Pending</option><option>Done</option><option>Paid</option><option>Can't Repair</option>
+        </select>
+      </div>
+      <div><label>Pay Date</label><input type="date" id="f-pay_date"></div>
+      <div class="form-full"><label>Notes</label><input type="text" id="f-notes" placeholder="Any extra notes..."></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="saveJob()" id="saveBtn">Save Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="overlay" id="viewOverlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="viewTitle">Job Details</span>
+      <button class="close-btn" onclick="closeView()">✕</button>
+    </div>
+    <div id="viewBody"></div>
+    <div class="form-actions">
+      <button class="btn" style="border-color:var(--red);color:var(--red)" id="vDelBtn">🗑 Delete</button>
+      <button class="btn" onclick="closeView()">Close</button>
+      <button class="btn primary" id="vEditBtn">✏ Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="overlay" id="importOverlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Import Historical Jobs</span>
+      <button class="close-btn" onclick="document.getElementById('importOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:14px">
+      ඔයාගේ books 6ම ඇතුලේ <strong>75 jobs</strong> (Nov 2025 → Sep 2026) Supabase ට import කරනවා.<br>
+      <span style="color:var(--yellow)">⚠ මේක once විතරයි run කරන්න — duplicate වෙනවා!</span>
+    </div>
+    <div id="importProgress" style="font-size:12px;color:var(--t3);;display:none;max-height:120px;overflow-y:auto;background:var(--s2);padding:8px;border-radius:6px;margin-bottom:10px"></div>
+    <div id="importStatusMsg" class="import-status"></div>
+    <div class="form-actions">
+      <button class="btn" onclick="document.getElementById('importOverlay').classList.remove('open')">Cancel</button>
+      <button class="btn primary" id="importBtn" onclick="runImport()">⬆ Import 75 Jobs</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SCANNER MODAL -->
+<div class="overlay" id="scannerOverlay">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <div class="modal-title">
+      <span>📷 Scan Serial Number</span>
+      <button class="close-btn" onclick="closeScanner()">✕</button>
+    </div>
+    <div style="position:relative;width:100%;background:#000;border-radius:8px;overflow:hidden;margin-bottom:14px">
+      <video id="scanVideo" style="width:100%;height:280px;object-fit:cover;display:block"></video>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="width:80%;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:scanLine 2s ease-in-out infinite"></div>
+      </div>
+      <canvas id="scanCanvas" style="display:none"></canvas>
+    </div>
+    <div id="scanStatus" style="font-size:13px;color:var(--t2);margin-bottom:12px">Camera initializing...</div>
+    <div style="margin-bottom:14px">
+      <label style="margin-bottom:6px">Or type manually:</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="manualSerial" placeholder="Type serial here..." style="flex:1">
+        <button class="btn primary" onclick="applyManualSerial()">Apply</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--t3)">Laptop bottom ඇතුළේ sticker එකේ barcode camera ට point කරන්න</div>
+  </div>
+</div>
+
+<style>
+@keyframes scanLine{0%,100%{transform:translateY(-60px)}50%{transform:translateY(60px)}}
+</style>
+
+<script>
+const SUPA_URL = 'https://mkdylncwtijbvishocse.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZHlsbmN3dGlqYnZpc2hvY3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDU1NDQsImV4cCI6MjEwNTYyMTU0NH0.PB2c2jGBlnAONC3tg79yl-FvSw88RUZ_Q9N5_ngbqRc';
+const HEADERS = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+
+let allJobs = [];
+let sortField = 'job_no', sortDir = -1;
+let currentPage = 1;
+const PAGE = 25;
+let editingId = null;
+
+// ── SUPABASE API ──────────────────────────────────────────────────────────
+async function sbFetch(path, opts={}) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, {headers:HEADERS, ...opts});
+  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+  return r.status === 204 ? null : r.json();
+}
+
+async function loadJobs() {
+  setSyncBadge('ing','Loading...');
+  document.getElementById('loadingState').style.display='';
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('jobsBody').innerHTML='';
+  try {
+    allJobs = await sbFetch('jobs?select=*&order=job_no.desc&limit=1000');
+    setSyncBadge('ok','Synced');
+    updateStats();
+    renderTable();
+  } catch(e) {
+    setSyncBadge('err','Offline');
+    showToast('Connection failed: '+e.message,'err');
+  } finally {
+    document.getElementById('loadingState').style.display='none';
+  }
+}
+
+async function syncNow() { await loadJobs(); showToast('Synced!','ok'); }
+
+// ── STATS ─────────────────────────────────────────────────────────────────
+function updateStats() {
+  const t = allJobs.length;
+  const done = allJobs.filter(j=>j.status==='Done'||j.status==='Paid').length;
+  const pend = allJobs.filter(j=>j.status==='Pending').length;
+  const cant = allJobs.filter(j=>j.status==="Can't Repair").length;
+  const rev  = allJobs.filter(j=>j.charge>0).reduce((a,j)=>a+j.charge,0);
+  const ta   = allJobs.filter(j=>j.send_date&&j.received_date);
+  const avg  = ta.length ? Math.round(ta.reduce((a,j)=>{
+    const d=(new Date(j.received_date)-new Date(j.send_date))/86400000;
+    return a+(d>=0?d:0);
+  },0)/ta.length) : 0;
+  document.getElementById('s-total').textContent = t;
+  document.getElementById('s-done').textContent  = done;
+  document.getElementById('s-pending').textContent = pend;
+  document.getElementById('s-cant').textContent  = cant;
+  document.getElementById('s-rev').textContent   = 'Rs.'+rev.toLocaleString();
+  document.getElementById('s-avg').textContent   = avg+'d';
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q  = document.getElementById('searchInput').value.toLowerCase();
+  const fs = document.getElementById('fStatus').value;
+  const fb = document.getElementById('fBrand').value;
+  return allJobs.filter(j=>{
+    const txt = [j.job_no,j.gn_no,j.customer,j.model,j.repair,j.serial_no].join(' ').toLowerCase();
+    if (q && !txt.includes(q)) return false;
+    if (fs && j.status!==fs) return false;
+    if (fb && j.brand!==fb) return false;
+    return true;
+  }).sort((a,b)=>{
+    let av=a[sortField]||'', bv=b[sortField]||'';
+    if (sortField==='job_no'||sortField==='charge'){av=+av;bv=+bv;}
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+}
+
+function renderTable() {
+  const filtered = getFiltered();
+  const pages = Math.max(1,Math.ceil(filtered.length/PAGE));
+  if (currentPage>pages) currentPage=1;
+  const page = filtered.slice((currentPage-1)*PAGE, currentPage*PAGE);
+  const tbody = document.getElementById('jobsBody');
+  const empty = document.getElementById('emptyState');
+  tbody.innerHTML='';
+  empty.style.display = page.length===0?'':'none';
+  page.forEach(j=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="job-no">#${j.job_no||'—'}</td>
+      <td class="gn">${j.gn_no||'—'}</td>
+      <td class="cust">${j.customer||'—'}</td>
+      <td><span class="brand ${(j.brand||'other').toLowerCase()}">${j.brand||'—'}</span></td>
+      <td class="model-c" title="${j.model||''}">${j.model||'—'}</td>
+      <td class="repair-c" title="${j.repair||''}">${j.repair||'—'}</td>
+      <td class="date-c">${fd(j.send_date)}</td>
+      <td class="date-c">${fd(j.received_date)}</td>
+      <td class="days-c">${ta(j.send_date,j.received_date)}</td>
+      <td class="charge-c">${j.charge?'Rs.'+j.charge.toLocaleString():'—'}</td>
+      <td>${badge(j.status)}</td>
+      <td><button class="btn" style="padding:4px 7px;font-size:11px" onclick="viewJob(${j.id})">👁</button>
+          <button class="btn" style="padding:4px 7px;font-size:11px" onclick="openEditModal(${j.id})">✏</button></td>`;
+    tbody.appendChild(tr);
+  });
+  renderPages(filtered.length, pages);
+}
+
+function fd(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y.slice(2)}`;}
+function ta(s,r){
+  if(!s||!r)return'—';
+  const d=Math.round((new Date(r)-new Date(s))/86400000);
+  if(isNaN(d)||d<0)return'—';
+  return d===0?'Same':d+'d';
+}
+function badge(s){
+  const m={'Done':'done','Pending':'pending',"Can't Repair":'cant','Paid':'paid'};
+  return`<span class="badge ${m[s]||'pending'}"><span class="bdot"></span>${s||'Pending'}</span>`;
+}
+
+function renderPages(total,pages){
+  const bar=document.getElementById('paginationBar');
+  bar.innerHTML='';
+  const max=5;
+  let start=Math.max(1,currentPage-2), end=Math.min(pages,start+max-1);
+  if(end-start<max-1) start=Math.max(1,end-max+1);
+  if(start>1){const b=document.createElement('button');b.className='page-btn';b.textContent='1';b.onclick=()=>{currentPage=1;renderTable()};bar.appendChild(b);}
+  if(start>2){const s=document.createElement('span');s.textContent='…';s.style.cssText='color:var(--t3);padding:0 4px';bar.appendChild(s);}
+  for(let i=start;i<=end;i++){const b=document.createElement('button');b.className='page-btn'+(i===currentPage?' active':'');b.textContent=i;b.onclick=(()=>{const p=i;return()=>{currentPage=p;renderTable()}})();bar.appendChild(b);}
+  if(end<pages-1){const s=document.createElement('span');s.textContent='…';s.style.cssText='color:var(--t3);padding:0 4px';bar.appendChild(s);}
+  if(end<pages){const b=document.createElement('button');b.className='page-btn';b.textContent=pages;b.onclick=()=>{currentPage=pages;renderTable()};bar.appendChild(b);}
+  const info=document.createElement('span');info.className='page-info';info.textContent=total+' jobs';bar.appendChild(info);
+}
+
+function sortBy(f){if(sortField===f)sortDir*=-1;else{sortField=f;sortDir=-1;}renderTable();}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openAddModal(){
+  editingId=null;
+  document.getElementById('modalTitle').textContent='Add New Job';
+  clearForm();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(id){
+  const j=allJobs.find(x=>x.id===id); if(!j)return;
+  editingId=id;
+  document.getElementById('modalTitle').textContent='Edit Job #'+j.job_no;
+  document.getElementById('f-job_no').value=j.job_no||'';
+  document.getElementById('f-gn_no').value=j.gn_no||'';
+  document.getElementById('f-customer').value=j.customer||'';
+  document.getElementById('f-send_date').value=j.send_date||'';
+  document.getElementById('f-brand').value=j.brand||'';
+  document.getElementById('f-model').value=j.model||'';
+  document.getElementById('f-serial_no').value=j.serial_no||'';
+  document.getElementById('f-repair').value=j.repair||'';
+  document.getElementById('f-received_date').value=j.received_date||'';
+  document.getElementById('f-charge').value=j.charge||'';
+  document.getElementById('f-status').value=j.status||'Pending';
+  document.getElementById('f-pay_date').value=j.pay_date||'';
+  document.getElementById('f-notes').value=j.notes||'';
+  closeView();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function clearForm(){
+  ['f-job_no','f-gn_no','f-customer','f-send_date','f-brand','f-model',
+   'f-serial_no','f-repair','f-received_date','f-charge','f-pay_date','f-notes'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('f-status').value='Pending';
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+
+async function saveJob(){
+  const btn=document.getElementById('saveBtn');
+  btn.textContent='Saving...'; btn.disabled=true;
+  const body={
+    job_no:+document.getElementById('f-job_no').value||null,
+    gn_no:document.getElementById('f-gn_no').value.trim()||null,
+    customer:document.getElementById('f-customer').value.trim()||null,
+    send_date:document.getElementById('f-send_date').value||null,
+    brand:document.getElementById('f-brand').value||null,
+    model:document.getElementById('f-model').value.trim()||null,
+    serial_no:document.getElementById('f-serial_no').value.trim()||null,
+    repair:document.getElementById('f-repair').value.trim()||null,
+    received_date:document.getElementById('f-received_date').value||null,
+    charge:+document.getElementById('f-charge').value||0,
+    status:document.getElementById('f-status').value,
+    pay_date:document.getElementById('f-pay_date').value||null,
+    notes:document.getElementById('f-notes').value.trim()||null,
+  };
+  try {
+    if(editingId){
+      await sbFetch('jobs?id=eq.'+editingId,{method:'PATCH',body:JSON.stringify(body)});
+      showToast('Job updated ✓','ok');
+    } else {
+      await sbFetch('jobs',{method:'POST',body:JSON.stringify(body)});
+      showToast('Job added ✓','ok');
+    }
+    closeModal(); await loadJobs();
+  } catch(e){showToast('Save failed: '+e.message,'err');}
+  btn.textContent='Save Job'; btn.disabled=false;
+}
+
+// ── VIEW ─────────────────────────────────────────────────────────────────
+function viewJob(id){
+  const j=allJobs.find(x=>x.id===id); if(!j)return;
+  document.getElementById('viewTitle').textContent='Job #'+j.job_no;
+  document.getElementById('viewBody').innerHTML=`
+    <div class="detail-grid">
+      <div class="detail-item"><label>Job No</label><div class="val mono">#${j.job_no||'—'}</div></div>
+      <div class="detail-item"><label>GN No</label><div class="val mono">${j.gn_no||'—'}</div></div>
+      <div class="detail-item"><label>Customer</label><div class="val">${j.customer||'—'}</div></div>
+      <div class="detail-item"><label>Brand / Model</label><div class="val">${j.brand||'—'} ${j.model||''}</div></div>
+      <div class="detail-item"><label>Serial Number</label><div class="val mono" style="font-size:12px;letter-spacing:.04em">${j.serial_no||'—'}</div></div>
+      <div class="detail-item"><label>Repair</label><div class="val">${j.repair||'—'}</div></div>
+      <div class="detail-item"><label>Status</label><div class="val">${badge(j.status)}</div></div>
+      <div class="detail-item"><label>Send Date</label><div class="val mono">${fd(j.send_date)}</div></div>
+      <div class="detail-item"><label>Received Date</label><div class="val mono">${fd(j.received_date)}</div></div>
+      <div class="detail-item"><label>Turnaround</label><div class="val mono">${ta(j.send_date,j.received_date)}</div></div>
+      <div class="detail-item"><label>Charge</label><div class="val mono" style="color:var(--green)">${j.charge?'Rs.'+j.charge.toLocaleString():'—'}</div></div>
+      <div class="detail-item"><label>Pay Date</label><div class="val mono">${fd(j.pay_date)}</div></div>
+      <div class="detail-item"><label>Notes</label><div class="val">${j.notes||'—'}</div></div>
+    </div>`;
+  document.getElementById('vEditBtn').onclick=()=>openEditModal(id);
+  document.getElementById('vDelBtn').onclick=()=>deleteJob(id);
+  document.getElementById('viewOverlay').classList.add('open');
+}
+function closeView(){document.getElementById('viewOverlay').classList.remove('open');}
+
+async function deleteJob(id){
+  if(!confirm('Delete this job?'))return;
+  try{
+    await sbFetch('jobs?id=eq.'+id,{method:'DELETE'});
+    showToast('Job deleted','ok'); closeView(); await loadJobs();
+  }catch(e){showToast('Delete failed','err');}
+}
+
+// ── ANALYTICS ─────────────────────────────────────────────────────────────
+function renderAnalytics(){
+  const jobs=allJobs;
+  // Brand
+  const brands={};
+  jobs.forEach(j=>{if(j.brand)brands[j.brand]=(brands[j.brand]||0)+1;});
+  const mxB=Math.max(...Object.values(brands),1);
+  document.getElementById('cBrand').innerHTML=Object.entries(brands)
+    .sort((a,b)=>b[1]-a[1]).map(([b,n])=>
+    `<div class="bar-row"><div class="bar-label">${b}</div><div class="bar-track"><div class="bar-fill" style="width:${n/mxB*100}%"></div></div><div class="bar-val">${n}</div></div>`).join('');
+  // Repair
+  const repairs={};
+  jobs.forEach(j=>{
+    if(!j.repair)return;
+    const r=j.repair.toLowerCase();
+    const k=r.includes('hing')?'Hinges':r.includes('no power')?'No Power':r.includes('charg')?'Charging':r.includes('display')?'No Display':r.includes('mother')?'Motherboard':r.includes('port')||r.includes('connector')?'Power Port':'Other';
+    repairs[k]=(repairs[k]||0)+1;
+  });
+  const mxR=Math.max(...Object.values(repairs),1);
+  const cols=['var(--accent)','var(--green)','var(--yellow)','var(--purple)','var(--red)','var(--accent2)','#f97316'];
+  document.getElementById('cRepair').innerHTML=Object.entries(repairs)
+    .sort((a,b)=>b[1]-a[1]).map(([r,n],i)=>
+    `<div class="bar-row"><div class="bar-label">${r}</div><div class="bar-track"><div class="bar-fill" style="width:${n/mxR*100}%;background:${cols[i%cols.length]}"></div></div><div class="bar-val">${n}</div></div>`).join('');
+  // Monthly revenue
+  const mLbls={'2025-11':'Nov 25','2025-12':'Dec 25','2026-01':'Jan 26','2026-02':'Feb 26','2026-03':'Mar 26','2026-04':'Apr 26','2026-05':'May 26','2026-06':'Jun 26','2026-07':'Jul 26','2026-08':'Aug 26','2026-09':'Sep 26'};
+  const revM={};
+  jobs.forEach(j=>{if(!j.send_date||!j.charge)return;const ym=j.send_date.slice(0,7);revM[ym]=(revM[ym]||0)+j.charge;});
+  document.getElementById('cRevenue').innerHTML=Object.entries(revM).sort((a,b)=>a[0]<b[0]?-1:1)
+    .map(([ym,amt])=>`<div class="rev-row"><div class="rev-month">${mLbls[ym]||ym}</div><div class="rev-amt">Rs.${amt.toLocaleString()}</div></div>`).join('');
+  // Status
+  const st={};
+  jobs.forEach(j=>{st[j.status||'Pending']=(st[j.status||'Pending']||0)+1;});
+  const mxS=Math.max(...Object.values(st),1);
+  const sc={'Done':'var(--green)','Paid':'var(--accent)','Pending':'var(--yellow)',"Can't Repair":'var(--red)'};
+  document.getElementById('cStatus').innerHTML=Object.entries(st).sort((a,b)=>b[1]-a[1])
+    .map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${n/mxS*100}%;background:${sc[s]||'var(--accent)'}"></div></div><div class="bar-val">${n}</div></div>`).join('');
+  // Turnaround by month
+  const taM={};
+  jobs.forEach(j=>{
+    if(!j.send_date||!j.received_date)return;
+    const d=Math.round((new Date(j.received_date)-new Date(j.send_date))/86400000);
+    if(isNaN(d)||d<0)return;
+    const ym=j.send_date.slice(0,7);
+    if(!taM[ym])taM[ym]={t:0,c:0};
+    taM[ym].t+=d; taM[ym].c++;
+  });
+  document.getElementById('cTurnaround').innerHTML=Object.entries(taM).sort((a,b)=>a[0]<b[0]?-1:1)
+    .map(([ym,v])=>`<div class="rev-row"><div class="rev-month">${mLbls[ym]||ym}</div><div class="rev-amt" style="color:var(--accent2)">${Math.round(v.t/v.c)}d</div></div>`).join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-jobs').style.display=name==='jobs'?'':'none';
+  document.getElementById('tab-analytics').style.display=name==='analytics'?'':'none';
+  if(name==='analytics')renderAnalytics();
+}
+
+// ── IMPORT (all 75 historical jobs) ───────────────────────────────────────
+function openImportModal(){document.getElementById('importOverlay').classList.add('open');}
+
+async function runImport(){
+  const btn=document.getElementById('importBtn');
+  const prog=document.getElementById('importProgress');
+  const statusMsg=document.getElementById('importStatusMsg');
+  btn.disabled=true; btn.textContent='Importing...';
+  prog.style.display=''; statusMsg.className='import-status'; statusMsg.textContent='';
+
+  const jobs=[
+    {job_no:3738,gn_no:'GN1868',customer:'Rishini Balasuriya Ms.',brand:'Dell',model:'P102F',repair:'Hinges',send_date:'2025-11-02',received_date:'2025-11-13',charge:2500,status:'Paid',pay_date:'2025-11-15',notes:'Cash paid 15/11/25'},
+    {job_no:3736,gn_no:'GN1872',customer:'Mr. Manuja @ GUI',brand:'HP',model:null,repair:'No Power',send_date:'2025-11-02',received_date:'2025-11-17',charge:4500,status:'Paid',pay_date:null,notes:'Rs.9000/2'},
+    {job_no:3739,gn_no:'GN1873',customer:'ADT',brand:'Lenovo',model:'B590',repair:'No Power',send_date:'2025-11-12',received_date:'2025-11-17',charge:4500,status:'Paid',pay_date:'2025-11-12',notes:'Cash paid 12/11/25'},
+    {job_no:3740,gn_no:'GN1869',customer:'Subashini Mrs.',brand:'Dell',model:'P89F',repair:'Hinges',send_date:'2025-11-13',received_date:'2025-11-15',charge:3000,status:'Paid',pay_date:'2025-11-15',notes:'Cash paid'},
+    {job_no:3744,gn_no:'GN1884',customer:'Himasha Gunasekara',brand:'Dell',model:'3542',repair:'No Power',send_date:'2025-11-18',received_date:'2025-11-19',charge:7000,status:'Paid',pay_date:null,notes:'Cash paid'},
+    {job_no:3620,gn_no:'GN1885',customer:'Dinidu Buddima',brand:'Lenovo',model:null,repair:'Not Charging',send_date:'2025-11-18',received_date:'2025-11-19',charge:4500,status:'Paid',pay_date:null,notes:'11,500/2'},
+    {job_no:3754,gn_no:'GN1889',customer:'Novachem',brand:'Dell',model:'i5 3520',repair:'Hinges Damage',send_date:'2025-11-20',received_date:'2025-11-21',charge:2500,status:'Paid',pay_date:'2025-12-05',notes:'Cash paid 5/12/25'},
+    {job_no:3720,gn_no:'GN1949',customer:'ADT Kumara',brand:'Dell',model:'P-B9G',repair:'No Display',send_date:'2025-11-04',received_date:'2025-12-13',charge:800,status:'Paid',pay_date:'2025-12-20',notes:'Cash paid 20/12/25'},
+    {job_no:3758,gn_no:'GN1916',customer:'Casantha Kandage',brand:'Acer',model:null,repair:'Hinges',send_date:'2025-11-25',received_date:'2025-12-05',charge:3000,status:'Paid',pay_date:'2025-12-10',notes:'Cash paid'},
+    {job_no:3764,gn_no:'GN1928',customer:'Nishantha Gunarathne',brand:'HP',model:null,repair:'Caps Lock Blink',send_date:'2025-12-06',received_date:'2025-12-17',charge:0,status:"Can't Repair",pay_date:null,notes:null},
+    {job_no:3789,gn_no:null,customer:'Keshani',brand:'Asus',model:null,repair:'No Power',send_date:'2025-12-12',received_date:'2025-12-17',charge:0,status:"Can't Repair",pay_date:null,notes:null},
+    {job_no:3810,gn_no:'GN1969',customer:'Larother',brand:'HP',model:null,repair:'Hinges',send_date:'2025-12-24',received_date:'2025-12-26',charge:3000,status:'Paid',pay_date:'2025-12-30',notes:'Cash paid 30/12/25'},
+    {job_no:3813,gn_no:'GN1970',customer:'Madigasekara Mr.',brand:'Dell',model:null,repair:'Hinges',send_date:'2025-12-26',received_date:'2025-12-26',charge:2500,status:'Paid',pay_date:'2025-12-30',notes:'Cash paid 30/12/25'},
+    {job_no:3816,gn_no:null,customer:'Sarath Ruhunusiri',brand:'Sony',model:null,repair:'No Power',send_date:'2026-01-09',received_date:'2026-01-14',charge:0,status:"Can't Repair",pay_date:null,notes:null},
+    {job_no:3832,gn_no:'GN1999',customer:'Naveen',brand:'Dell',model:null,repair:'Charging Port',send_date:'2026-01-09',received_date:'2026-01-09',charge:2000,status:'Paid',pay_date:'2026-01-14',notes:'Cash paid 14/1/26'},
+    {job_no:3834,gn_no:'GN2000',customer:'Sanjeewa A.V.D Mr.',brand:'Dell',model:null,repair:'No Power',send_date:'2026-01-10',received_date:'2026-01-14',charge:6000,status:'Paid',pay_date:'2026-01-14',notes:'Cash paid 14/1/26'},
+    {job_no:3849,gn_no:'GN2019',customer:'Mrs. Thushari Huwawasam',brand:'Dell',model:'P102F',repair:'Power Connector',send_date:'2026-01-22',received_date:'2026-01-22',charge:3000,status:'Paid',pay_date:'2026-01-22',notes:'Cash paid 22/1/26'},
+    {job_no:3865,gn_no:'GN2049',customer:'Naveen',brand:'Dell',model:null,repair:'Not Charging',send_date:'2026-01-29',received_date:null,charge:5500,status:'Done',pay_date:'2026-02-06',notes:'Recheck 31/01/26'},
+    {job_no:3804,gn_no:'GN2061',customer:'Ranjith Kalasinghe',brand:'Lenovo',model:null,repair:'No Power',send_date:'2026-02-09',received_date:'2026-02-10',charge:5500,status:'Paid',pay_date:null,notes:null},
+    {job_no:3880,gn_no:'GN2062',customer:'Uthum Mr.',brand:'HP',model:null,repair:'Charging Port',send_date:'2026-02-10',received_date:'2026-02-10',charge:1000,status:'Paid',pay_date:null,notes:'Power port damage'},
+    {job_no:3885,gn_no:'GN2073',customer:'Udara Mr. B',brand:'Asus',model:null,repair:'Hinges',send_date:'2026-02-12',received_date:'2026-02-13',charge:2500,status:'Paid',pay_date:'2026-02-13',notes:'Cash paid 13/2/26'},
+    {job_no:3903,gn_no:'GN2090',customer:'Jayasinghe Dr.',brand:'Dell',model:'P112F',repair:'Hinges',send_date:'2026-02-25',received_date:'2026-02-27',charge:2500,status:'Paid',pay_date:'2026-02-27',notes:'Cash paid 27/2/26'},
+    {job_no:3905,gn_no:'GN2092',customer:'Hiprabath Mr.',brand:'Dell',model:'P112F',repair:'Hinges',send_date:'2026-03-03',received_date:'2026-03-03',charge:3000,status:'Paid',pay_date:'2026-03-03',notes:'Cash paid 3/3/26'},
+    {job_no:3909,gn_no:'GN2104',customer:'Lalith Gunadas Mr.',brand:'Acer',model:'Aspire V3-571',repair:'Motherboard Repair',send_date:'2026-03-06',received_date:'2026-03-10',charge:4500,status:'Paid',pay_date:'2026-03-16',notes:'Cash paid 16/3/26'},
+    {job_no:3915,gn_no:'GN2114',customer:'Shashi Rajdha Mr.',brand:'Asus',model:null,repair:'Hinges',send_date:'2026-03-13',received_date:'2026-03-16',charge:2500,status:'Paid',pay_date:'2026-03-11',notes:'Cash paid 11/3/26'},
+    {job_no:3945,gn_no:'GN2149',customer:'Pahuman Mr.',brand:'Lenovo',model:null,repair:'Hinges',send_date:'2026-04-03',received_date:'2026-04-06',charge:2500,status:'Paid',pay_date:'2026-04-14',notes:'Cash paid 14/4/26'},
+    {job_no:3955,gn_no:'GN2158',customer:'Ravindra Mr.',brand:'Dell',model:null,repair:'Hinges',send_date:'2026-04-07',received_date:'2026-04-08',charge:2500,status:'Paid',pay_date:'2026-04-08',notes:'Cash paid 8/4/26'},
+    {job_no:3957,gn_no:'GN2121',customer:null,brand:'HP',model:null,repair:'Hinges',send_date:'2026-04-18',received_date:'2026-04-30',charge:2500,status:'Paid',pay_date:'2026-04-20',notes:'Cash paid 20/4/26'},
+    {job_no:3958,gn_no:'GN2212',customer:'Yapa S.S',brand:'HP',model:null,repair:'Caps Lock Blink',send_date:'2026-04-20',received_date:'2026-05-02',charge:9500,status:'Paid',pay_date:'2026-05-02',notes:'Cash paid 9/5/26'},
+    {job_no:3965,gn_no:'GN2173',customer:'Lekmi Munasinghe',brand:'Lenovo',model:null,repair:'No Power',send_date:'2026-04-20',received_date:'2026-04-23',charge:4500,status:'Paid',pay_date:'2026-04-23',notes:'Cash paid 23/4/26'},
+    {job_no:3973,gn_no:'GN2195',customer:'Garangan',brand:'MSI',model:null,repair:'Hinges',send_date:'2026-04-29',received_date:'2026-04-30',charge:3000,status:'Paid',pay_date:'2026-05-05',notes:'Cash paid 5/5/26'},
+    {job_no:3932,gn_no:'GN2209',customer:'Uvinda',brand:'Asus',model:null,repair:'Auto Restart',send_date:'2026-04-30',received_date:'2026-05-05',charge:5000,status:'Paid',pay_date:'2026-05-02',notes:'Cash paid'},
+    {job_no:3981,gn_no:'GN0205',customer:'ADT',brand:'Lenovo',model:null,repair:'Hinges',send_date:'2026-05-02',received_date:'2026-05-05',charge:3500,status:'Paid',pay_date:'2026-05-07',notes:'Cash paid 7/5/26'},
+    {job_no:3947,gn_no:'GN0208',customer:'Rathnakumara Mr. ADT',brand:'HP',model:'Elitebook',repair:'Motherboard Repair',send_date:null,received_date:'2026-05-02',charge:4500,status:'Paid',pay_date:'2026-05-11',notes:'Cash paid 11/5/26'},
+    {job_no:3999,gn_no:'GN0218',customer:'Sarangan',brand:'MSI',model:null,repair:'Hinges',send_date:'2026-05-09',received_date:'2026-05-11',charge:3000,status:'Paid',pay_date:'2026-05-18',notes:'Cash paid 18/5/26'},
+    {job_no:4002,gn_no:'GN0226',customer:null,brand:'Lenovo',model:'ThinkPad',repair:'Hinges',send_date:'2026-05-13',received_date:'2026-05-15',charge:3000,status:'Paid',pay_date:'2026-05-18',notes:'Cash paid 18/5/26'},
+    {job_no:4007,gn_no:'GN0231',customer:'Isuru Mr.',brand:'Acer',model:null,repair:'Motherboard Repair',send_date:'2026-05-15',received_date:'2026-05-10',charge:4500,status:'Paid',pay_date:'2026-05-21',notes:'Cash paid 21/5/26'},
+    {job_no:4020,gn_no:'GN2243',customer:'Ms. Dasuni',brand:'Asus',model:null,repair:'Hinges',send_date:'2026-05-19',received_date:'2026-06-01',charge:4000,status:'Paid',pay_date:'2026-06-01',notes:'Cash paid 1/6/26'},
+    {job_no:4030,gn_no:'GN2260',customer:'Mr. Maddima',brand:'Dell',model:null,repair:'Hinges',send_date:'2026-05-26',received_date:'2026-05-28',charge:2500,status:'Paid',pay_date:'2026-06-03',notes:'Cash paid 3/6/26'},
+    {job_no:4038,gn_no:'GN2274',customer:'Ms. Thisuri',brand:'HP',model:null,repair:'Hinges',send_date:'2026-06-01',received_date:'2026-06-03',charge:2500,status:'Paid',pay_date:'2026-06-08',notes:'Cash paid 8/6/26'},
+    {job_no:4054,gn_no:'GN2281',customer:'Tridone',brand:'Dell',model:'3510 12W3NN3',repair:'Hinges',send_date:'2026-06-09',received_date:'2026-06-10',charge:2500,status:'Paid',pay_date:'2026-06-06',notes:'Hinge damage'},
+    {job_no:4065,gn_no:'GN2296',customer:null,brand:'Acer',model:null,repair:'No Power',send_date:'2026-06-12',received_date:null,charge:4500,status:'Paid',pay_date:'2026-06-17',notes:'Cash paid 17/6/26'},
+    {job_no:4066,gn_no:'GN2303',customer:null,brand:'MSI',model:null,repair:'Hinges',send_date:'2026-06-17',received_date:null,charge:2500,status:'Paid',pay_date:'2026-06-24',notes:'Cash paid 24/6/26'},
+    {job_no:4076,gn_no:'GN2310',customer:'Acto',brand:'Dell',model:null,repair:'No Power',send_date:'2026-06-25',received_date:'2026-06-30',charge:4500,status:'Paid',pay_date:'2026-06-30',notes:'Cash paid 30/6/26'},
+    {job_no:4094,gn_no:'GN2318',customer:'Ravisha Mr.',brand:'Lenovo',model:null,repair:'Not Charging',send_date:'2026-07-04',received_date:'2026-07-06',charge:4500,status:'Paid',pay_date:'2026-07-06',notes:'6/7/26 paid'},
+    {job_no:4086,gn_no:'GN2329',customer:'Dininda Buddhima',brand:'Lenovo',model:null,repair:'Battery Not Charging',send_date:'2026-07-07',received_date:'2026-07-08',charge:4500,status:'Paid',pay_date:'2026-07-27',notes:'09/07/26'},
+    {job_no:4099,gn_no:'GN2330',customer:'Shashikala De Silva Ms.',brand:'Dell',model:'P112F',repair:'No Power',send_date:'2026-07-07',received_date:'2026-07-08',charge:4500,status:'Paid',pay_date:'2026-07-09',notes:'09/7/26'},
+    {job_no:4102,gn_no:'GN2336',customer:'Megu Glubni',brand:'Dell',model:null,repair:'Hinges',send_date:'2026-07-09',received_date:'2026-07-10',charge:2500,status:'Paid',pay_date:'2026-07-10',notes:'Cash paid 10/7/26'},
+    {job_no:4120,gn_no:'GN2345',customer:'Titi Dr.',brand:'Dell',model:'P112F',repair:'Hinges',send_date:'2026-07-13',received_date:'2026-07-15',charge:2500,status:'Paid',pay_date:'2026-07-16',notes:'16/7/26 paid'},
+    {job_no:4130,gn_no:'GN2354',customer:null,brand:'Dell',model:null,repair:'Hinges',send_date:'2026-07-18',received_date:'2026-07-20',charge:2500,status:'Paid',pay_date:'2026-07-24',notes:'Screen S/N 012852; cash paid 24/7/26'},
+    {job_no:4135,gn_no:'GN2358',customer:'T.T Fernando',brand:'Dell',model:null,repair:'Charging Port Damage',send_date:'2026-07-20',received_date:'2026-07-22',charge:500,status:'Paid',pay_date:'2026-07-22',notes:'Paid 22/7/26'},
+    {job_no:4141,gn_no:'GN2370',customer:'Rohan Mr.',brand:'Dell',model:null,repair:'Hinges',send_date:'2026-07-28',received_date:'2026-07-30',charge:2500,status:'Paid',pay_date:'2026-07-30',notes:'30/7/26 paid'},
+    {job_no:4145,gn_no:null,customer:null,brand:'HP',model:null,repair:'Hinges',send_date:'2026-08-01',received_date:'2026-08-07',charge:2500,status:'Paid',pay_date:'2026-08-07',notes:'8/8/26 paid'},
+    {job_no:4149,gn_no:null,customer:null,brand:'Dell',model:null,repair:'Power Button Damage',send_date:'2026-08-05',received_date:'2026-08-05',charge:500,status:'Paid',pay_date:null,notes:'Cash paid'},
+    {job_no:4152,gn_no:null,customer:null,brand:'Dell',model:null,repair:'Hinges',send_date:'2026-08-05',received_date:'2026-08-07',charge:3000,status:'Paid',pay_date:null,notes:'Cash paid'},
+    {job_no:4153,gn_no:null,customer:'Dinindu',brand:'Dell',model:null,repair:'Hinges',send_date:'2026-08-05',received_date:'2026-08-12',charge:3000,status:'Done',pay_date:null,notes:'Warranty'},
+    {job_no:4154,gn_no:null,customer:'Mr. Charles',brand:'HP',model:null,repair:'No Power',send_date:'2026-08-05',received_date:'2026-08-08',charge:0,status:"Can't Repair",pay_date:null,notes:null},
+    {job_no:4162,gn_no:null,customer:null,brand:'HP',model:null,repair:'Hinges',send_date:'2026-08-07',received_date:'2026-08-07',charge:2500,status:'Paid',pay_date:'2026-08-07',notes:'Paid 8/8/26'},
+    {job_no:4186,gn_no:null,customer:null,brand:'Asus',model:null,repair:'No Power',send_date:'2026-08-19',received_date:'2026-08-21',charge:4500,status:'Paid',pay_date:'2026-08-21',notes:'Cash paid 21/8/26'},
+    {job_no:4196,gn_no:null,customer:null,brand:'Lenovo',model:null,repair:'Hinges',send_date:'2026-08-24',received_date:'2026-08-25',charge:3500,status:'Paid',pay_date:'2026-08-25',notes:'Cash paid 25/8/26'},
+    {job_no:4203,gn_no:null,customer:null,brand:'Dell',model:null,repair:'No Power',send_date:'2026-08-28',received_date:'2026-09-02',charge:5000,status:'Paid',pay_date:'2026-09-02',notes:'Cash paid 2/9/26'},
+    {job_no:4222,gn_no:null,customer:null,brand:'HP',model:null,repair:'No Display',send_date:'2026-09-14',received_date:'2026-09-21',charge:0,status:"Can't Repair",pay_date:null,notes:null},
+    {job_no:4223,gn_no:null,customer:null,brand:'Dell',model:null,repair:'No Display',send_date:'2026-09-16',received_date:'2026-09-21',charge:0,status:"Can't Repair",pay_date:null,notes:null},
+    {job_no:4227,gn_no:null,customer:'Senjoye Weerasinghe',brand:'Asus',model:null,repair:'Battery Not Connecting',send_date:'2026-09-10',received_date:null,charge:0,status:'Pending',pay_date:null,notes:null},
+  ];
+
+  let done=0, failed=0;
+  prog.textContent='';
+  const CHUNK=10;
+  for(let i=0;i<jobs.length;i+=CHUNK){
+    const chunk=jobs.slice(i,i+CHUNK);
+    try{
+      const r=await fetch(SUPA_URL+'/rest/v1/jobs',{
+        method:'POST',
+        headers:{...HEADERS,'Prefer':'return=minimal'},
+        body:JSON.stringify(chunk)
+      });
+      if(r.ok){done+=chunk.length;prog.textContent+=`✓ Imported rows ${i+1}–${Math.min(i+CHUNK,jobs.length)}\n`;}
+      else{failed+=chunk.length;prog.textContent+=`✗ Failed rows ${i+1}–${Math.min(i+CHUNK,jobs.length)}\n`;}
+    }catch(e){failed+=chunk.length;}
+    prog.scrollTop=prog.scrollHeight;
+  }
+  if(failed===0){
+    statusMsg.className='import-status ok';
+    statusMsg.textContent=`✓ Successfully imported ${done} jobs!`;
+    btn.textContent='✓ Done';
+    await loadJobs();
+  } else {
+    statusMsg.className='import-status err';
+    statusMsg.textContent=`Imported ${done}, failed ${failed}. Try again.`;
+    btn.disabled=false; btn.textContent='⬆ Retry';
+  }
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────────────────
+function exportCSV(){
+  const h=['Job No','GN No','Customer','Brand','Model','Repair','Send Date','Received','Charge','Status','Pay Date','Notes'];
+  const rows=allJobs.map(j=>[j.job_no,j.gn_no,j.customer,j.brand,j.model,j.repair,j.send_date,j.received_date,j.charge,j.status,j.pay_date,j.notes].map(v=>`"${v||''}"`).join(','));
+  const csv=[h.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='btech_jobs_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ── SYNC BADGE ────────────────────────────────────────────────────────────
+function setSyncBadge(state,txt){
+  const b=document.getElementById('syncBadge');
+  const t=document.getElementById('syncText');
+  b.className='sync-badge sync-'+state;
+  t.textContent=txt;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+(type==='err'?'err':'ok');
+  setTimeout(()=>t.className='toast',2500);
+}
+
+// ── SCANNER ───────────────────────────────────────────────────────────────
+let scanStream = null;
+let scanInterval = null;
+
+async function openScanner() {
+  document.getElementById('scannerOverlay').classList.add('open');
+  document.getElementById('scanStatus').textContent = 'Starting camera...';
+  document.getElementById('manualSerial').value = '';
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width:{ideal:1280}, height:{ideal:720} }
+    });
+    const video = document.getElementById('scanVideo');
+    video.srcObject = scanStream;
+    await video.play();
+
+    // Try BarcodeDetector API (Chrome 88+, Edge, Android Chrome)
+    if ('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({
+        formats: ['code_128','code_39','ean_13','ean_8','qr_code','data_matrix','itf','upc_a','upc_e','pdf417','aztec']
+      });
+      document.getElementById('scanStatus').textContent = '📷 Point camera at barcode / QR on laptop...';
+      scanInterval = setInterval(async () => {
+        try {
+          const barcodes = await detector.detect(video);
+          if (barcodes.length > 0) {
+            const raw = barcodes[0].rawValue;
+            // Clean up serial — remove common prefixes
+            const serial = raw.replace(/^(S\/N|SN|Serial|SERIAL)[:\s]*/i,'').trim();
+            applySerial(serial);
+          }
+        } catch(e) {}
+      }, 500);
+    } else {
+      // Fallback — canvas frame capture + manual
+      document.getElementById('scanStatus').innerHTML =
+        '⚠ Auto-scan not supported in this browser.<br>Use <strong>Chrome</strong> for barcode scanning, or type manually below.';
+    }
+  } catch(e) {
+    document.getElementById('scanStatus').textContent =
+      e.name === 'NotAllowedError'
+        ? '❌ Camera permission denied. Allow camera and try again.'
+        : '❌ Camera not available. Use manual entry below.';
+  }
+}
+
+function closeScanner() {
+  if (scanStream) { scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  if (scanInterval) { clearInterval(scanInterval); scanInterval=null; }
+  document.getElementById('scannerOverlay').classList.remove('open');
+  document.getElementById('scanVideo').srcObject = null;
+}
+
+function applySerial(serial) {
+  document.getElementById('f-serial_no').value = serial;
+  showToast('Serial: ' + serial, 'ok');
+  closeScanner();
+}
+
+function applyManualSerial() {
+  const v = document.getElementById('manualSerial').value.trim();
+  if (!v) return;
+  applySerial(v);
+}
+
+// USB barcode scanner — auto-focuses serial field when scanner modal closed
+// Most USB scanners act as keyboard — just click field and scan directly
+
+// Close overlays on backdrop click
+['modalOverlay','viewOverlay','importOverlay','scannerOverlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{
+    if(e.target===e.currentTarget){
+      if(id==='scannerOverlay') closeScanner();
+      else e.target.classList.remove('open');
+    }
+  });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+loadJobs();
+</script>
+</body>
+</html>
