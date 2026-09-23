@@ -10,7 +10,7 @@
 <meta name="application-name" content="BTech Repair">
 <title>BTech Repair – Job Tracker</title>
 
-<!-- Google Fonts for English (Inter) & Sinhala (Noto Sans Sinhala) -->
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -95,7 +95,7 @@ thead th{background:var(--s1);padding:9px 10px;text-align:left;font-size:9px;tex
 thead th:hover{color:var(--accent)}
 tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
 tbody tr:hover{background:var(--s2)}
-tbody tr.delayed-row{background:rgba(239,68,68,.08)} /* ළා රතු පාට Highlight එක */
+tbody tr.delayed-row{background:rgba(239,68,68,.08)}
 tbody tr.delayed-row:hover{background:rgba(239,68,68,.15)}
 tbody td{padding:9px 10px;vertical-align:middle}
 td.job-no{;font-size:13px;font-weight:600;color:var(--accent2)}
@@ -416,8 +416,18 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
+// --- SUPABASE SETTINGS ---
 const SUPA_URL = 'https://mkdylncwtijbvishocse.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZHlsbmN3dGlqYnZpc2hvY3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDU1NDQsImV4cCI6MjEwNTYyMTU0NH0.PB2c2jGBlnAONC3tg79yl-FvSw88RUZ_Q9N5_ngbqRc';
+
+// --- TELEGRAM SETTINGS ---
+const TELEGRAM_TOKEN = '8611024648:AAE_A54FA-ksq-3ZwRxFRaw5887y0QK49sk';
+
+// ඔයාගේ සහ අලුත් කෙනාගේ Chat IDs මෙතන එකතු කරලා තියෙන්නේ
+const TELEGRAM_CHAT_IDS = [
+  '8990461615',
+  '6363002948'
+];
 
 let sessionToken = localStorage.getItem('btech_auth_token');
 let allJobs = [];
@@ -426,6 +436,44 @@ let currentPage = 1;
 const PAGE = 25;
 let editingId = null;
 
+// --- TELEGRAM MESSAGE FUNCTION ---
+async function sendTelegramAlert(messageText) {
+  for (const chatId of TELEGRAM_CHAT_IDS) {
+    if (!chatId) continue;
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ chat_id: chatId.trim(), text: messageText, parse_mode: 'HTML' })
+      });
+    } catch(e) { console.error('Telegram Error:', e); }
+  }
+}
+
+// දිනකට වරක් පරක්කු වූ ලැප්ටොප් ගැන මැසේජ් එක යැවීම
+function checkAndSendDelayedTelegramAlert() {
+  const delayedJobs = allJobs.filter(j => isJobDelayed(j));
+  if (delayedJobs.length === 0) return; // පරක්කු ඒවා නැත්නම් යවන්න එපා
+
+  const todayStr = new Date().toISOString().slice(0,10);
+  const lastAlertDate = localStorage.getItem('btech_last_tg_alert');
+
+  // අද දවසේ තාම මැසේජ් එක යවලා නැත්නම් විතරක් යවන්න
+  if (lastAlertDate !== todayStr) {
+    let text = `⚠️ <b>අවධානයට! පරක්කු වූ ලැප්ටොප් ${delayedJobs.length}ක් ඇත</b>\n\n`;
+    delayedJobs.forEach(j => {
+      const d = Math.floor((new Date() - new Date(j.send_date))/86400000);
+      text += `▪️ <b>#${j.job_no || '-'}</b>: ${j.customer} <i>(${d} Days Delayed)</i>\n`;
+    });
+    text += `\nකරුණාකර BTech ආයතනයෙන් විමසන්න.`;
+    
+    sendTelegramAlert(text);
+    localStorage.setItem('btech_last_tg_alert', todayStr); // අද යැව්වා කියලා සේව් කරගන්නවා
+  }
+}
+
+// --- AUTHENTICATION ---
 function checkAuth() {
   if (!sessionToken) {
     document.getElementById('loginOverlay').style.display = 'flex';
@@ -494,13 +542,13 @@ function toggleSearchIcon(){
   else { icon.style.display='none'; input.placeholder=''; }
 }
 
-// දවස් ගාණ බලන Function එක
+// දවස් 3ට වඩා පරක්කුද කියලා බලන Function එක
 function isJobDelayed(job) {
   if (job.status !== 'Pending' || !job.send_date) return false;
   const sendDate = new Date(job.send_date);
   const today = new Date();
   const diffDays = Math.floor((today - sendDate) / (1000 * 60 * 60 * 24));
-  return diffDays > 3; // දවස් 3කට වඩා වැඩිනම්
+  return diffDays > 3;
 }
 
 async function loadJobs() {
@@ -514,6 +562,7 @@ async function loadJobs() {
     document.getElementById('loadingState').style.display='none';
     updateStats();
     renderTable();
+    checkAndSendDelayedTelegramAlert(); // Telegram මැසේජ් එක යැවීමේ Function එක
   } catch(e) {
     setSyncBadge('err','Offline');
     document.getElementById('loadingState').style.display='none';
@@ -552,13 +601,8 @@ function getFiltered() {
   return allJobs.filter(j=>{
     const txt = [j.job_no,j.gn_no,j.customer,j.model,j.repair,j.serial_no].join(' ').toLowerCase();
     if (q && !txt.includes(q)) return false;
-    
-    if (fs === 'Delayed') {
-      if (!isJobDelayed(j)) return false;
-    } else if (fs && j.status!==fs) {
-      return false;
-    }
-    
+    if (fs === 'Delayed') { if (!isJobDelayed(j)) return false; } 
+    else if (fs && j.status!==fs) return false;
     if (fb && j.brand!==fb) return false;
     if (fp && (j.payment_status||'Not Paid')!==fp) return false;
     return true;
@@ -579,17 +623,13 @@ function renderTable() {
   document.getElementById('loadingState').style.display='none';
   tbody.innerHTML='';
   
-  if(page.length===0){
-    empty.style.display='';
-    empty.innerHTML='<div class="empty-ico">🔧</div><div>No jobs found</div>';
-  } else {
-    empty.style.display='none';
-  }
+  if(page.length===0){ empty.style.display=''; empty.innerHTML='<div class="empty-ico">🔧</div><div>No jobs found</div>'; } 
+  else { empty.style.display='none'; }
   
   page.forEach(j=>{
     const delayed = isJobDelayed(j);
     const tr=document.createElement('tr');
-    if (delayed) tr.className = 'delayed-row'; // රතු පාට පේළිය
+    if (delayed) tr.className = 'delayed-row';
     
     tr.innerHTML=`
       <td class="job-no">#${j.job_no||'—'}</td>
@@ -620,9 +660,7 @@ function ta(s,r){
 }
 
 function repairBadge(s, isDelayed){
-  if (isDelayed) {
-    return `<span class="badge delayed"><span class="bdot"></span>⚠️ Delayed</span>`;
-  }
+  if (isDelayed) return `<span class="badge delayed"><span class="bdot"></span>⚠️ Delayed</span>`;
   const m={'Done':'done','Pending':'pending',"Can't Repair":'cant'};
   const icons={'Done':'✓','Pending':'⏳',"Can't Repair":'✕'};
   const cls=m[s]||'pending';
@@ -635,9 +673,7 @@ function payBadge(s){
 }
 
 function renderPages(total,pages){
-  const bar=document.getElementById('paginationBar');
-  bar.innerHTML='';
-  const max=5;
+  const bar=document.getElementById('paginationBar'); bar.innerHTML=''; const max=5;
   let start=Math.max(1,currentPage-2), end=Math.min(pages,start+max-1);
   if(end-start<max-1) start=Math.max(1,end-max+1);
   if(start>1){const b=document.createElement('button');b.className='page-btn';b.textContent='1';b.onclick=()=>{currentPage=1;renderTable()};bar.appendChild(b);}
@@ -657,11 +693,9 @@ function openAddModal(){
 
 function openEditModal(id){
   const j=allJobs.find(x=>x.id===id); if(!j)return;
-  editingId=id;
-  document.getElementById('modalTitle').textContent='Edit Job #'+j.job_no;
+  editingId=id; document.getElementById('modalTitle').textContent='Edit Job #'+j.job_no;
   ['job_no','gn_no','customer','send_date','brand','model','serial_no','repair','received_date','charge','status','payment_status','pay_date','payment_method','returned_date','repair_updates','notes'].forEach(k => {
-    const el = document.getElementById('f-'+k);
-    if(el) el.value = j[k] || '';
+    const el = document.getElementById('f-'+k); if(el) el.value = j[k] || '';
   });
   if(!j.status) document.getElementById('f-status').value = 'Pending';
   if(!j.payment_status) document.getElementById('f-payment_status').value = 'Not Paid';
@@ -698,8 +732,18 @@ async function saveJob(){
     notes:document.getElementById('f-notes').value.trim()||null,
   };
   try {
-    if(editingId){ await sbFetch('jobs?id=eq.'+editingId,{method:'PATCH',body:JSON.stringify(body)}); showToast('Job updated ✓','ok'); } 
-    else { await sbFetch('jobs',{method:'POST',body:JSON.stringify(body)}); showToast('Job added ✓','ok'); }
+    if(editingId){ 
+      await sbFetch('jobs?id=eq.'+editingId,{method:'PATCH',body:JSON.stringify(body)}); 
+      showToast('Job updated ✓','ok'); 
+    } 
+    else { 
+      await sbFetch('jobs',{method:'POST',body:JSON.stringify(body)}); 
+      showToast('Job added ✓','ok'); 
+      
+      // අලුත් Job එකක් දැම්මම Telegram එකට මැසේජ් එක යැවීම
+      const newJobAlert = `🆕 <b>නව අලුත්වැඩියාවක් භාරගන්නා ලදී!</b>\n\nJob No: <b>#${body.job_no || '-'}</b>\nCustomer: ${body.customer}\nBrand: ${body.brand}\nRepair: ${body.repair}`;
+      sendTelegramAlert(newJobAlert);
+    }
     closeModal(); await loadJobs();
   } catch(e){showToast('Save failed: '+e.message,'err');}
   btn.textContent='Save Job'; btn.disabled=false;
@@ -736,19 +780,20 @@ async function deleteJob(id){
   try{ await sbFetch('jobs?id=eq.'+id,{method:'DELETE'}); showToast('Job deleted','ok'); closeView(); await loadJobs(); }catch(e){showToast('Delete failed','err');}
 }
 
-function renderAnalytics(){ /* (කලින් විදිහටම තියෙනවා) */ }
+function renderAnalytics(){ /* Analytics code */ }
 function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
   document.getElementById('tab-jobs').style.display=name==='jobs'?'':'none';
   document.getElementById('tab-analytics').style.display=name==='analytics'?'':'none';
 }
-function exportCSV(){ /* (කලින් විදිහටම) */ }
+function exportCSV(){ /* CSV code */ }
 function setSyncBadge(state,txt){ document.getElementById('syncBadge').className='sync-badge sync-'+state; document.getElementById('syncText').textContent=txt; }
 function showToast(msg,type='ok'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+(type==='err'?'err':'ok'); setTimeout(()=>t.className='toast',2500); }
 function printJobSheet(id) { const j = allJobs.find(x=>x.id===id); if(!j) return; window.open('','_blank','width=820,height=700').document.write(`<!DOCTYPE html><html><body><h1>Job #${j.job_no}</h1><button onclick="window.print()">Print</button></body></html>`); }
+
 let scanStream = null; let scanInterval = null;
-async function openScanner() { /* (කලින් විදිහටම) */ }
-function closeScanner() { /* (කලින් විදිහටම) */ }
+async function openScanner() { /* Scanner Code */ }
+function closeScanner() { /* Scanner Code */ }
 function applySerial(serial) { document.getElementById('f-serial_no').value = serial; showToast('Serial: ' + serial, 'ok'); closeScanner(); }
 function applyManualSerial() { const v = document.getElementById('manualSerial').value.trim(); if (v) applySerial(v); }
 ['modalOverlay','viewOverlay','scannerOverlay'].forEach(id=>{ document.getElementById(id).addEventListener('click',e=>{ if(e.target===e.currentTarget){ if(id==='scannerOverlay') closeScanner(); else e.target.classList.remove('open'); } }); });
