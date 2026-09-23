@@ -31,6 +31,20 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 
+/* LOGIN OVERLAY */
+#loginOverlay {
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box {
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:30px;width:340px;text-align:center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.login-box input {
+  width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:6px;font-family:var(--sans);font-size:14px;outline:none;margin-bottom:15px;box-sizing:border-box;
+}
+.login-box input:focus { border-color:var(--accent); }
+
 /* HEADER */
 header{background:var(--s1);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo-wrap{display:flex;flex-direction:column;gap:1px}
@@ -129,7 +143,6 @@ textarea{resize:vertical;min-height:60px}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
 .detail-item label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:2px}
 .detail-item .val{font-size:13px;color:var(--text)}
-.detail-item .val.mono{}
 .sep{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 /* EMPTY / LOADING */
@@ -175,95 +188,119 @@ textarea{resize:vertical;min-height:60px}
 </head>
 <body>
 
-<header>
-  <div class="logo-wrap">
-    <div class="logo-top">GUI Technologies</div>
-    <div class="logo-main">BTech Repair</div>
-    <div class="logo-sub">Job Management System</div>
-  </div>
-  <div class="hdr-right">
-    <div class="sync-badge sync-ing" id="syncBadge" onclick="syncNow()" title="Click to sync">
-      <span class="sync-dot"></span>
-      <span id="syncText">Connecting...</span>
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div style="font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">GUI Technologies</div>
+    <h2 style="margin-bottom:24px;color:var(--text);font-size:20px;">BTech Repair System</h2>
+    
+    <div style="text-align:left;">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="admin@guitech.com" autocomplete="email">
     </div>
-    <button class="btn primary" onclick="openAddModal()">+ <span class="btn-txt">Add Job</span></button>
+    
+    <div style="text-align:left;">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    
+    <button class="btn primary" style="width:100%;justify-content:center;padding:10px;margin-top:10px;" id="loginBtn" onclick="handleLogin()">Sign In</button>
+    <div id="loginErr" style="color:var(--red);font-size:12px;margin-top:14px;display:none;background:rgba(239,68,68,.1);padding:8px;border-radius:6px;"></div>
   </div>
-</header>
-
-<div class="stats">
-  <div class="stat"><div class="stat-val blue" id="s-total">—</div><div class="stat-label">Total Jobs</div></div>
-  <div class="stat"><div class="stat-val green" id="s-done">—</div><div class="stat-label">Done</div></div>
-  <div class="stat"><div class="stat-val yellow" id="s-pending">—</div><div class="stat-label">Pending</div></div>
-  <div class="stat"><div class="stat-val red" id="s-cant">—</div><div class="stat-label">Can't Repair</div></div>
-  <div class="stat"><div class="stat-val green" id="s-rev">—</div><div class="stat-label">Paid Revenue</div></div>
-  <div class="stat"><div class="stat-val red" id="s-outstanding">—</div><div class="stat-label">Outstanding</div></div>
 </div>
 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('jobs',this)">Jobs</div>
-  <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
-</div>
+<div id="appContainer" style="display:none; flex-direction:column; height:100%;">
+  <header>
+    <div class="logo-wrap">
+      <div class="logo-top">GUI Technologies</div>
+      <div class="logo-main">BTech Repair</div>
+      <div class="logo-sub">Job Management System</div>
+    </div>
+    <div class="hdr-right">
+      <div class="sync-badge sync-ing" id="syncBadge" onclick="syncNow()" title="Click to sync">
+        <span class="sync-dot"></span>
+        <span id="syncText">Connecting...</span>
+      </div>
+      <button class="btn primary" onclick="openAddModal()">+ <span class="btn-txt">Add Job</span></button>
+      <button class="btn" style="border-color:var(--red);color:var(--red);" onclick="logout()"><span class="btn-txt">Logout</span> ⏏</button>
+    </div>
+  </header>
 
-<div id="tab-jobs">
-  <div class="toolbar">
-    <div class="search-wrap">
-      <span class="search-ico" onclick="document.getElementById('searchInput').focus();renderTable()" style="cursor:pointer">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search job, customer, GN, repair..." oninput="renderTable();toggleSearchIcon()" onchange="toggleSearchIcon()">
-    </div>
-    <select id="fStatus" onchange="renderTable()">
-      <option value="">All Repair Status</option>
-      <option>Done</option><option>Pending</option><option>Can't Repair</option>
-    </select>
-    <select id="fPayment" onchange="renderTable()">
-      <option value="">All Payment</option>
-      <option>Paid</option><option>Not Paid</option>
-    </select>
-    <select id="fBrand" onchange="renderTable()">
-      <option value="">All Brands</option>
-      <option>Dell</option><option>HP</option><option>Lenovo</option>
-      <option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option>
-    </select>
-    <button class="btn" onclick="exportCSV()">⬇ CSV</button>
+  <div class="stats">
+    <div class="stat"><div class="stat-val blue" id="s-total">—</div><div class="stat-label">Total Jobs</div></div>
+    <div class="stat"><div class="stat-val green" id="s-done">—</div><div class="stat-label">Done</div></div>
+    <div class="stat"><div class="stat-val yellow" id="s-pending">—</div><div class="stat-label">Pending</div></div>
+    <div class="stat"><div class="stat-val red" id="s-cant">—</div><div class="stat-label">Can't Repair</div></div>
+    <div class="stat"><div class="stat-val green" id="s-rev">—</div><div class="stat-label">Paid Revenue</div></div>
+    <div class="stat"><div class="stat-val red" id="s-outstanding">—</div><div class="stat-label">Outstanding</div></div>
   </div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr>
-        <th onclick="sortBy('job_no')">Job No ↕</th>
-        <th>GN No</th>
-        <th onclick="sortBy('customer')">Customer ↕</th>
-        <th>Brand</th>
-        <th>Model</th>
-        <th>Repair</th>
-        <th onclick="sortBy('send_date')">Send Date ↕</th>
-        <th>Received</th>
-        <th>Days</th>
-        <th onclick="sortBy('charge')">Charge ↕</th>
-        <th onclick="sortBy('status')">Repair ↕</th>
-        <th onclick="sortBy('payment_status')">Payment ↕</th>
-        <th></th>
-      </tr></thead>
-      <tbody id="jobsBody"></tbody>
-    </table>
-    <div id="emptyState" class="empty" style="display:none">
-      <div class="empty-ico">🔧</div>
-      <div>No jobs found</div>
-    </div>
-    <div id="loadingState" class="empty">
-      <div class="spinner"></div>
-      <div style="margin-top:10px;font-size:12px">Loading jobs...</div>
-    </div>
-  </div>
-  <div class="pagination" id="paginationBar"></div>
-</div>
 
-<div id="tab-analytics" style="display:none">
-  <div class="charts-grid">
-    <div class="chart-card"><div class="chart-title">Jobs by Brand</div><div id="cBrand"></div></div>
-    <div class="chart-card"><div class="chart-title">Repair Types</div><div id="cRepair"></div></div>
-    <div class="chart-card"><div class="chart-title">Monthly Revenue (LKR)</div><div class="rev-list" id="cRevenue"></div></div>
-    <div class="chart-card"><div class="chart-title">Repair Status</div><div id="cStatus"></div></div>
-    <div class="chart-card"><div class="chart-title">Payment Status</div><div id="cPayment"></div></div>
-    <div class="chart-card"><div class="chart-title">Avg Turnaround by Month</div><div class="rev-list" id="cTurnaround"></div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('jobs',this)">Jobs</div>
+    <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
+  </div>
+
+  <div id="tab-jobs">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-ico" onclick="document.getElementById('searchInput').focus();renderTable()" style="cursor:pointer">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search job, customer, GN, repair..." oninput="renderTable();toggleSearchIcon()" onchange="toggleSearchIcon()">
+      </div>
+      <select id="fStatus" onchange="renderTable()">
+        <option value="">All Repair Status</option>
+        <option>Done</option><option>Pending</option><option>Can't Repair</option>
+      </select>
+      <select id="fPayment" onchange="renderTable()">
+        <option value="">All Payment</option>
+        <option>Paid</option><option>Not Paid</option>
+      </select>
+      <select id="fBrand" onchange="renderTable()">
+        <option value="">All Brands</option>
+        <option>Dell</option><option>HP</option><option>Lenovo</option>
+        <option>Asus</option><option>Acer</option><option>MSI</option><option>Sony</option>
+      </select>
+      <button class="btn" onclick="exportCSV()">⬇ CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('job_no')">Job No ↕</th>
+          <th>GN No</th>
+          <th onclick="sortBy('customer')">Customer ↕</th>
+          <th>Brand</th>
+          <th>Model</th>
+          <th>Repair</th>
+          <th onclick="sortBy('send_date')">Send Date ↕</th>
+          <th>Received</th>
+          <th>Days</th>
+          <th onclick="sortBy('charge')">Charge ↕</th>
+          <th onclick="sortBy('status')">Repair ↕</th>
+          <th onclick="sortBy('payment_status')">Payment ↕</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="jobsBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty" style="display:none">
+        <div class="empty-ico">🔧</div>
+        <div>No jobs found</div>
+      </div>
+      <div id="loadingState" class="empty">
+        <div class="spinner"></div>
+        <div style="margin-top:10px;font-size:12px">Loading jobs...</div>
+      </div>
+    </div>
+    <div class="pagination" id="paginationBar"></div>
+  </div>
+
+  <div id="tab-analytics" style="display:none">
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Jobs by Brand</div><div id="cBrand"></div></div>
+      <div class="chart-card"><div class="chart-title">Repair Types</div><div id="cRepair"></div></div>
+      <div class="chart-card"><div class="chart-title">Monthly Revenue (LKR)</div><div class="rev-list" id="cRevenue"></div></div>
+      <div class="chart-card"><div class="chart-title">Repair Status</div><div id="cStatus"></div></div>
+      <div class="chart-card"><div class="chart-title">Payment Status</div><div id="cPayment"></div></div>
+      <div class="chart-card"><div class="chart-title">Avg Turnaround by Month</div><div class="rev-list" id="cTurnaround"></div></div>
+    </div>
   </div>
 </div>
 
@@ -345,7 +382,7 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
-<!-- IMPORT MODAL -->
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <!-- SCANNER MODAL -->
@@ -374,14 +411,12 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
-<style>
-@keyframes scanLine{0%,100%{transform:translateY(-60px)}50%{transform:translateY(60px)}}
-</style>
-
 <script>
 const SUPA_URL = 'https://mkdylncwtijbvishocse.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZHlsbmN3dGlqYnZpc2hvY3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDU1NDQsImV4cCI6MjEwNTYyMTU0NH0.PB2c2jGBlnAONC3tg79yl-FvSw88RUZ_Q9N5_ngbqRc';
-const HEADERS = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+
+// Authentication State
+let sessionToken = localStorage.getItem('btech_auth_token');
 
 let allJobs = [];
 let sortField = 'job_no', sortDir = -1;
@@ -389,10 +424,78 @@ let currentPage = 1;
 const PAGE = 25;
 let editingId = null;
 
+// ── AUTHENTICATION ────────────────────────────────────────────────────────
+function checkAuth() {
+  if (!sessionToken) {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('appContainer').style.display = 'none';
+  } else {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('appContainer').style.display = 'flex';
+    loadJobs();
+  }
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+
+  if(!email || !pass) {
+    err.textContent = 'Please enter email and password';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Logging in...';
+  try {
+    const res = await fetch(SUPA_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.msg || 'Invalid Login Details');
+    
+    sessionToken = data.access_token;
+    localStorage.setItem('btech_auth_token', sessionToken);
+    checkAuth();
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+  btn.textContent = 'Sign In';
+}
+
+function logout() {
+  sessionToken = null;
+  localStorage.removeItem('btech_auth_token');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+  checkAuth();
+}
+
 // ── SUPABASE API ──────────────────────────────────────────────────────────
 async function sbFetch(path, opts={}) {
-  const r = await fetch(SUPA_URL + '/rest/v1/' + path, {headers:HEADERS, ...opts});
-  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+  const authHeader = sessionToken ? 'Bearer ' + sessionToken : 'Bearer ' + SUPA_KEY;
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    ...opts
+  });
+  if (!r.ok) { 
+    if(r.status === 401 || r.status === 403) {
+      logout();
+      throw new Error('Session Expired. Please login again.');
+    }
+    const e = await r.text(); throw new Error(e); 
+  }
   return r.status === 204 ? null : r.json();
 }
 
@@ -423,8 +526,8 @@ async function loadJobs() {
     setSyncBadge('err','Offline');
     document.getElementById('loadingState').style.display='none';
     document.getElementById('emptyState').style.display='';
-    document.getElementById('emptyState').innerHTML='<div class="empty-ico">⚠️</div><div style="color:var(--red)">Cannot connect.<br><small style="color:var(--t3)">Check internet &amp; refresh page.</small></div>';
-    showToast('Connection failed','err');
+    document.getElementById('emptyState').innerHTML='<div class="empty-ico">⚠️</div><div style="color:var(--red)">Connection Failed.<br><small style="color:var(--t3)">Check internet &amp; refresh page.</small></div>';
+    showToast(e.message,'err');
   }
 }
 
@@ -439,11 +542,7 @@ function updateStats() {
   const paid = allJobs.filter(j=>(j.payment_status||'Not Paid')==='Paid').length;
   const rev  = allJobs.filter(j=>j.charge>0&&(j.payment_status||'Not Paid')==='Paid').reduce((a,j)=>a+j.charge,0);
   const outstanding = allJobs.filter(j=>j.charge>0&&(j.payment_status||'Not Paid')==='Not Paid').reduce((a,j)=>a+j.charge,0);
-  const ta   = allJobs.filter(j=>j.send_date&&j.received_date);
-  const avg  = ta.length ? Math.round(ta.reduce((a,j)=>{
-    const d=(new Date(j.received_date)-new Date(j.send_date))/86400000;
-    return a+(d>=0?d:0);
-  },0)/ta.length) : 0;
+  
   document.getElementById('s-total').textContent   = t;
   document.getElementById('s-done').textContent    = done;
   document.getElementById('s-pending').textContent = pend;
@@ -483,7 +582,7 @@ function renderTable() {
   tbody.innerHTML='';
   if(page.length===0){
     empty.style.display='';
-    if(!empty.querySelector('button')) empty.innerHTML='<div class="empty-ico">🔧</div><div>No jobs found</div>';
+    empty.innerHTML='<div class="empty-ico">🔧</div><div>No jobs found</div>';
   } else {
     empty.style.display='none';
   }
@@ -595,7 +694,7 @@ async function saveJob(){
   const repairType = document.getElementById('f-repair').value.trim();
 
   if (!customerName || !brandName || !repairType) {
-    showToast('කරුණාකර Customer Name, Brand සහ Repair/Fault යන විස්තර අනිවාර්යයෙන් ඇතුළත් කරන්න!', 'err');
+    showToast('කරුණාකර Customer Name, Brand සහ Repair/Fault අනිවාර්යයෙන් ඇතුළත් කරන්න!', 'err');
     return; 
   }
 
@@ -729,7 +828,6 @@ function renderAnalytics(){
     .map(([ym,v])=>`<div class="rev-row"><div class="rev-month">${mLbls[ym]||ym}</div><div class="rev-amt" style="color:var(--accent2)">${Math.round(v.t/v.c)}d</div></div>`).join('');
 }
 
-// ── TABS ──────────────────────────────────────────────────────────────────
 function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -738,9 +836,6 @@ function switchTab(name,el){
   if(name==='analytics')renderAnalytics();
 }
 
-// ── IMPORT (all 75 historical jobs) ───────────────────────────────────────
-
-// ── EXPORT CSV ────────────────────────────────────────────────────────────
 function exportCSV(){
   const h=['Job No','GN No','Customer','Brand','Model','Repair','Send Date','Received','Charge','Status','Pay Date','Notes'];
   const rows=allJobs.map(j=>[j.job_no,j.gn_no,j.customer,j.brand,j.model,j.repair,j.send_date,j.received_date,j.charge,j.status,j.pay_date,j.notes].map(v=>`"${v||''}"`).join(','));
@@ -751,7 +846,6 @@ function exportCSV(){
   a.click();
 }
 
-// ── SYNC BADGE ────────────────────────────────────────────────────────────
 function setSyncBadge(state,txt){
   const b=document.getElementById('syncBadge');
   const t=document.getElementById('syncText');
@@ -759,128 +853,20 @@ function setSyncBadge(state,txt){
   t.textContent=txt;
 }
 
-// ── TOAST ─────────────────────────────────────────────────────────────────
 function showToast(msg,type='ok'){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast show '+(type==='err'?'err':'ok');
   setTimeout(()=>t.className='toast',2500);
 }
 
-// ── JOB SHEET PRINT ───────────────────────────────────────────────────────
 function printJobSheet(id) {
   const j = allJobs.find(x=>x.id===id);
   if(!j) return;
   const w = window.open('','_blank','width=820,height=700');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Job Sheet #${j.job_no}</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:Arial,sans-serif;font-size:13px;color:#111;padding:24px;max-width:780px;margin:0 auto}
-    .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e2a45;padding-bottom:14px;margin-bottom:18px}
-    .company .tag{font-size:10px;font-weight:700;color:#4f8ef7;letter-spacing:.1em;text-transform:uppercase}
-    .company h1{font-size:22px;font-weight:700;color:#1e2a45;margin:2px 0}
-    .company p{font-size:11px;color:#666}
-    .job-box{text-align:right}
-    .job-box .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888}
-    .job-box .num{font-size:28px;font-weight:700;color:#1e2a45;font-family:monospace;line-height:1}
-    .job-box .gn{font-size:11px;color:#888;margin-top:2px}
-    .section{margin-bottom:16px}
-    .sec-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#888;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #eee}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .grid.three{grid-template-columns:1fr 1fr 1fr}
-    .field{background:#f8f9fc;border:1px solid #e5e8f0;border-radius:4px;padding:8px 10px;min-height:44px}
-    .field label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:3px}
-    .field .val{font-size:13px;color:#111;font-weight:500}
-    .full{grid-column:1/-1}
-    .status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
-    .status-box{border:2px solid #e0e4f0;border-radius:8px;padding:10px 12px;text-align:center}
-    .status-box.green{border-color:#22c55e;background:#f0fdf4}
-    .status-box.yellow{border-color:#f59e0b;background:#fffbeb}
-    .status-box.red{border-color:#ef4444;background:#fef2f2}
-    .status-box .ico{font-size:18px;margin-bottom:3px}
-    .status-box .lbl{font-size:10px;font-weight:700;color:#333}
-    .status-box .sub{font-size:9px;color:#888;margin-top:1px}
-    .divider{border:none;border-top:1px dashed #ccc;margin:16px 0}
-    .sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:24px}
-    .sig-box{padding-top:8px;border-top:1px solid #333;text-align:center;font-size:11px;color:#555}
-    .footer{margin-top:18px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px}
-    .print-btn{display:block;margin:16px auto 0;background:#1e2a45;color:#fff;border:none;padding:10px 28px;border-radius:6px;font-size:14px;cursor:pointer}
-    @media print{.print-btn{display:none}body{padding:12px}}
-  </style></head><body>
-
-  <div class="header">
-    <div class="company">
-      <div class="tag">GUI Technologies</div>
-      <h1>Repair Job Sheet</h1>
-      <p>Sent to: <strong>BTech Repairs</strong></p>
-    </div>
-    <div class="job-box">
-      <div class="lbl">Job Number</div>
-      <div class="num">#${j.job_no||'—'}</div>
-      ${j.gn_no?`<div class="gn">${j.gn_no}</div>`:''}
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="sec-title">Customer & Device Information</div>
-    <div class="grid">
-      <div class="field"><label>Customer Name</label><div class="val">${j.customer||'—'}</div></div>
-      <div class="field"><label>Brand</label><div class="val">${j.brand||'—'}</div></div>
-      <div class="field"><label>Laptop Model</label><div class="val">${j.model||'—'}</div></div>
-      <div class="field"><label>Serial Number</label><div class="val" style="font-family:monospace;font-size:12px">${j.serial_no||'—'}</div></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="sec-title">Repair Information</div>
-    <div class="grid three">
-      <div class="field"><label>Issue / Fault</label><div class="val">${j.repair||'—'}</div></div>
-      <div class="field"><label>Sent to BTech</label><div class="val">${fd(j.send_date)}</div></div>
-      <div class="field"><label>Received Back</label><div class="val">${fd(j.received_date)}</div></div>
-    </div>
-    ${j.repair_updates?`<div class="field full" style="margin-top:8px"><label>Repair Updates / Notes</label><div class="val" style="white-space:pre-wrap;font-size:12px;line-height:1.6">${j.repair_updates}</div></div>`:''}
-  </div>
-
-  <div class="section">
-    <div class="sec-title">Status</div>
-    <div class="status-grid">
-      <div class="status-box ${j.status==='Done'?'green':j.status==='Pending'?'yellow':'red'}">
-        <div class="ico">${j.status==='Done'?'✅':j.status==='Pending'?'⏳':'❌'}</div>
-        <div class="lbl">${j.status||'Pending'}</div>
-        <div class="sub">Repair Status</div>
-      </div>
-      <div class="status-box ${(j.payment_status||'Not Paid')==='Paid'?'green':'red'}">
-        <div class="ico">${(j.payment_status||'Not Paid')==='Paid'?'💰':'⏳'}</div>
-        <div class="lbl">${j.payment_status||'Not Paid'}</div>
-        <div class="sub">Payment</div>
-      </div>
-      <div class="status-box ${j.returned_date?'green':'yellow'}">
-        <div class="ico">${j.returned_date?'📦':'⏳'}</div>
-        <div class="lbl">${fd(j.returned_date)}</div>
-        <div class="sub">Returned to Customer</div>
-      </div>
-    </div>
-    <div class="grid">
-      <div class="field"><label>Charge</label><div class="val" style="font-size:17px;font-weight:700;color:#166534">${j.charge?'Rs. '+j.charge.toLocaleString():'—'}</div></div>
-      <div class="field"><label>Payment Method</label><div class="val">${j.payment_method||'Cash'}</div></div>
-      <div class="field"><label>Payment Date</label><div class="val">${fd(j.pay_date)}</div></div>
-      ${j.notes?`<div class="field"><label>Notes</label><div class="val">${j.notes}</div></div>`:''}
-    </div>
-  </div>
-
-  <hr class="divider">
-  <div class="sig-grid">
-    <div class="sig-box">GUI Technologies Representative<br><span style="font-size:10px;color:#aaa">Name / Signature / Date</span></div>
-    <div class="sig-box">BTech — Received By<br><span style="font-size:10px;color:#aaa">Name / Signature / Date</span></div>
-  </div>
-
-  <div class="footer">BTech Repair Management System · GUI Technologies · Generated ${new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'})}</div>
-  <button class="print-btn" onclick="window.print()">🖨 Print Job Sheet</button>
-  </body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Job Sheet #${j.job_no}</title></head><body><h1>Job #${j.job_no}</h1><button onclick="window.print()">Print</button></body></html>`);
   w.document.close();
 }
 
-// ── SCANNER ───────────────────────────────────────────────────────────────
 let scanStream = null;
 let scanInterval = null;
 
@@ -896,33 +882,20 @@ async function openScanner() {
     video.srcObject = scanStream;
     await video.play();
 
-    // Try BarcodeDetector API (Chrome 88+, Edge, Android Chrome)
     if ('BarcodeDetector' in window) {
-      const detector = new BarcodeDetector({
-        formats: ['code_128','code_39','ean_13','ean_8','qr_code','data_matrix','itf','upc_a','upc_e','pdf417','aztec']
-      });
-      document.getElementById('scanStatus').textContent = '📷 Point camera at barcode / QR on laptop...';
+      const detector = new BarcodeDetector({ formats: ['code_128','qr_code'] });
+      document.getElementById('scanStatus').textContent = '📷 Point camera at barcode...';
       scanInterval = setInterval(async () => {
         try {
           const barcodes = await detector.detect(video);
-          if (barcodes.length > 0) {
-            const raw = barcodes[0].rawValue;
-            // Clean up serial — remove common prefixes
-            const serial = raw.replace(/^(S\/N|SN|Serial|SERIAL)[:\s]*/i,'').trim();
-            applySerial(serial);
-          }
+          if (barcodes.length > 0) applySerial(barcodes[0].rawValue.replace(/^(S\/N|SN|Serial|SERIAL)[:\s]*/i,'').trim());
         } catch(e) {}
       }, 500);
     } else {
-      // Fallback — canvas frame capture + manual
-      document.getElementById('scanStatus').innerHTML =
-        '⚠ Auto-scan not supported in this browser.<br>Use <strong>Chrome</strong> for barcode scanning, or type manually below.';
+      document.getElementById('scanStatus').innerHTML = '⚠ Auto-scan not supported. Type manually.';
     }
   } catch(e) {
-    document.getElementById('scanStatus').textContent =
-      e.name === 'NotAllowedError'
-        ? '❌ Camera permission denied. Allow camera and try again.'
-        : '❌ Camera not available. Use manual entry below.';
+    document.getElementById('scanStatus').textContent = '❌ Camera not available.';
   }
 }
 
@@ -945,10 +918,6 @@ function applyManualSerial() {
   applySerial(v);
 }
 
-// USB barcode scanner — auto-focuses serial field when scanner modal closed
-// Most USB scanners act as keyboard — just click field and scan directly
-
-// Close overlays on backdrop click
 ['modalOverlay','viewOverlay','scannerOverlay'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{
     if(e.target===e.currentTarget){
@@ -959,7 +928,7 @@ function applyManualSerial() {
 });
 
 // ── INIT ──────────────────────────────────────────────────────────────────
-loadJobs();
+checkAuth(); // START AUTH CHECK FIRST
 </script>
 </body>
 </html>
