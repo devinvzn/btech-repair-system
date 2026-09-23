@@ -2,9 +2,9 @@ name: Daily 10 AM Alert
 
 on:
   schedule:
-    # ශ්‍රී ලංකාවේ වෙලාවෙන් උදේ 10:00 කියන්නේ UTC වෙලාවෙන් පාන්දර 04:30 යි.
+    # ශ්‍රී ලංකාවේ වෙලාව උදේ 10:00 = UTC පාන්දර 04:30
     - cron: '30 4 * * *'
-  workflow_dispatch: # අපිට ඕනේ වෙලාවක Test කරලා බලන්න දෙන පහසුකම
+  workflow_dispatch: # අවශ්‍ය වෙලාවක අතින් Test කරන්න
 
 jobs:
   alert:
@@ -13,50 +13,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - name: Run Alert Script
-        run: |
-          cat << 'EOF' > run.js
-          (async () => {
-            const supaUrl = 'https://mkdylncwtijbvishocse.supabase.co';
-            const supaKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZHlsbmN3dGlqYnZpc2hvY3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDU1NDQsImV4cCI6MjEwNTYyMTU0NH0.PB2c2jGBlnAONC3tg79yl-FvSw88RUZ_Q9N5_ngbqRc';
-            const tgToken = '8611024648:AAE_A54FA-ksq-3ZwRxFRaw5887y0QK49sk';
-            const tgChatIds = ['8990461615', '6363002948']; // ඔයාලා දෙන්නගේම අංක
-
-            // Database එකෙන් Pending ලැප්ටොප් ටික ගැනීම
-            const res = await fetch(`${supaUrl}/rest/v1/jobs?select=*&status=eq.Pending`, {
-              headers: { 'apikey': supaKey, 'Authorization': `Bearer ${supaKey}` }
-            });
-            const jobs = await res.json();
-            
-            const today = new Date();
-            // දවස් 3කට වඩා පරක්කු ඒවා තේරීම
-            const delayedJobs = jobs.filter(j => {
-              if(!j.send_date) return false;
-              const diff = Math.floor((today - new Date(j.send_date)) / 86400000);
-              return diff > 3;
-            });
-
-            // මැසේජ් එක යැවීම
-            if(delayedJobs.length > 0) {
-              let text = `⚠️ <b>උදෑසන සිහිකැඳවීමයි! දින 3කට වඩා පරක්කු වූ ලැප්ටොප් ${delayedJobs.length}ක් ඇත.</b>\n\n`;
-              delayedJobs.forEach(j => {
-                const d = Math.floor((today - new Date(j.send_date)) / 86400000);
-                text += `▪️ <b>#${j.job_no || '-'}</b>: ${j.customer} <i>(${d} Days Delayed)</i>\n`;
-              });
-              text += `\nකරුණාකර අදම BTech ආයතනයෙන් විමසන්න.`;
-
-              for(const chatId of tgChatIds) {
-                await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
-                  body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
-                });
-              }
-              console.log("Alerts Sent!");
-            } else {
-              console.log("No delayed jobs today.");
-            }
-          })();
-          EOF
-          node run.js
+        env:
+          SUPA_URL: ${{ secrets.SUPA_URL }}
+          SUPA_SERVICE_KEY: ${{ secrets.SUPA_SERVICE_KEY }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
+        run: node scripts/daily-alert.js
