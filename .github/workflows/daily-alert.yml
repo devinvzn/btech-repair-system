@@ -4,11 +4,19 @@ on:
   schedule:
     # Sri Lanka time 10:00 AM = UTC 04:30
     - cron: '30 4 * * *'
-  workflow_dispatch: # Lets you run this manually anytime, for testing
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-alert
+  cancel-in-progress: false
 
 jobs:
   alert:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
