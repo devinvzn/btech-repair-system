@@ -1,21 +1,28 @@
 # Security Policy
 
-## Supported Versions
+## Current security controls
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+- Supabase Row Level Security is enabled on `public.jobs`.
+- Anonymous users do not have job-table RLS policies.
+- The broad duplicate `Allow logged in users` policy was removed.
+- `public.rls_auto_enable()` is no longer directly executable by `PUBLIC`, `anon`, or `authenticated`.
+- Telegram credentials are kept outside frontend source code.
+- The Telegram Edge Function requires a valid Supabase JWT.
+- GitHub Actions secrets are used for the daily service-role database job.
+- Warranty references are enforced by a database foreign key.
+- Job numbers are enforced as unique when present.
+- User-provided text rendered into HTML is escaped in the frontend and Telegram messages.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Please do not publish credentials, tokens, or exploit details in a public issue.
 
-Use this section to tell people how to report a vulnerability.
+Open a private security report through the repository's GitHub security/contact mechanism and include:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+- affected page or endpoint,
+- steps to reproduce,
+- expected vs actual behavior,
+- security impact,
+- and any relevant screenshots or logs with secrets removed.
+
+Never include passwords, Supabase service-role keys, Telegram bot tokens, or refresh tokens in a report.
