@@ -2,9 +2,9 @@ name: Daily 10 AM Alert
 
 on:
   schedule:
-    # ශ්‍රී ලංකාවේ වෙලාව උදේ 10:00 = UTC පාන්දර 04:30
+    # Sri Lanka time 10:00 AM = UTC 04:30
     - cron: '30 4 * * *'
-  workflow_dispatch: # අවශ්‍ය වෙලාවක අතින් Test කරන්න
+  workflow_dispatch: # Lets you run this manually anytime, for testing
 
 jobs:
   alert:
