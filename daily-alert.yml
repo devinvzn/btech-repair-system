@@ -1,0 +1,23 @@
+name: Daily 10 AM Alert
+
+on:
+  schedule:
+    # Sri Lanka time 10:00 AM = UTC 04:30
+    - cron: '30 4 * * *'
+  workflow_dispatch: # Lets you run this manually anytime, for testing
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run Alert Script
+        env:
+          SUPA_URL: ${{ secrets.SUPA_URL }}
+          SUPA_SERVICE_KEY: ${{ secrets.SUPA_SERVICE_KEY }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_IDS: ${{ secrets.TG_CHAT_IDS }}
+        run: node scripts/daily-alert.js
