@@ -525,10 +525,23 @@ async function handleLogin() {
   btn.innerHTML = 'Sign In <span class="material-symbols-outlined" style="font-size:18px">login</span>';
 }
 
-function logout() {
+async function logout() {
+  const token = sessionToken;
   sessionToken = refreshToken = null;
-  localStorage.removeItem('btech_auth_token'); localStorage.removeItem('btech_refresh_token');
-  allJobs = []; checkAuth();
+  localStorage.removeItem('btech_auth_token');
+  localStorage.removeItem('btech_refresh_token');
+  allJobs = [];
+
+  // Best-effort server-side sign-out so the refresh session is revoked too.
+  if (token) {
+    try {
+      await fetch(SUPA_URL + '/auth/v1/logout', {
+        method: 'POST',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token }
+      });
+    } catch (e) { /* local sign-out still completes */ }
+  }
+  checkAuth();
 }
 
 async function tryRefresh() {
