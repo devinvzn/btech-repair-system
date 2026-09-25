@@ -168,6 +168,57 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
 .rank-bar { grid-column: 1 / -1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
 .rank-bar > i { display: block; height: 100%; background: var(--primary-grad); border-radius: 3px; }
 
+
+/* Laptop / desktop widths: keep the full table usable on 13–16" screens
+   (common 1366x768, 1440x900, 1536x864 and similar resolutions). */
+@media (min-width: 769px) and (max-width: 1599px) {
+  .sidebar { width: 220px; }
+  .brand-area { padding-left: 20px; padding-right: 20px; padding-bottom: 24px; }
+  .brand-title { font-size: 20px; }
+  .nav-menu { padding: 0 12px; gap: 6px; }
+  .nav-item { padding: 10px 12px; gap: 10px; }
+
+  header { padding: 12px 18px; }
+  .header-actions { gap: 8px; }
+
+  .stats-grid { padding: 18px; gap: 12px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .stat-card { padding: 16px; min-width: 0; }
+  .stat-value { font-size: 23px; }
+  .stat-label { font-size: 10px; }
+
+  .toolbar { padding: 0 18px 12px; gap: 8px; }
+  .search-box { min-width: 160px; }
+
+  .table-container { padding: 0 18px 18px; overflow-x: auto; }
+  .table-wrapper { border-radius: 12px; }
+  table { table-layout: fixed; min-width: 0; }
+  th { padding: 10px 9px; font-size: 10px; }
+  td { padding: 10px 9px; font-size: 12px; }
+  table th:nth-child(1), table td:nth-child(1) { width: 7%; }
+  table th:nth-child(2), table td:nth-child(2) { width: 13%; }
+  table th:nth-child(3), table td:nth-child(3) { width: 13%; }
+  table th:nth-child(4), table td:nth-child(4) { width: 19%; }
+  table th:nth-child(5), table td:nth-child(5) { width: 9%; }
+  table th:nth-child(6), table td:nth-child(6) { width: 9%; }
+  table th:nth-child(7), table td:nth-child(7) { width: 7%; }
+  table th:nth-child(8), table td:nth-child(8) { width: 9%; }
+  table th:nth-child(9), table td:nth-child(9) { width: 7%; }
+  table th:nth-child(10), table td:nth-child(10) { width: 7%; }
+  td[data-label="Customer"],
+  td[data-label="Device"],
+  td[data-label="Issue"] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td[data-label="Actions"] > div { gap: 3px !important; }
+  td[data-label="Actions"] .btn { padding: 5px !important; }
+  td[data-label="Actions"] .material-symbols-outlined { font-size: 17px !important; }
+
+  .status-badge { padding: 3px 7px; font-size: 10px; gap: 3px; }
+  .status-badge .material-symbols-outlined { font-size: 12px; }
+
+  .an-wrap { padding: 18px; gap: 12px; }
+  .an-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .an-card { padding: 16px; }
+}
+
 @media (max-width: 768px) {
   html, body { font-size: 14px; }
   .sidebar { display: none; }
