@@ -1,7 +1,7 @@
 // Network-first service worker.
 // Purpose: lets the browser offer "Install app". Data always comes live from Supabase,
 // so nothing sensitive is cached and updates to index.html show up straight away.
-const CACHE = 'btech-shell-v1';
+const CACHE = 'btech-shell-v2';
 const SHELL = ['./', './index.html', './icons/icon-192.png'];
 
 self.addEventListener('install', (e) => {
