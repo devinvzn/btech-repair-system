@@ -21,6 +21,7 @@ async function query(path) {
 }
 
 async function send(text) {
+  let delivered = 0;
   for (const chat_id of chatIds) {
     const r = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -28,19 +29,44 @@ async function send(text) {
       body: JSON.stringify({ chat_id, text, parse_mode: 'HTML' }),
     });
     if (!r.ok) console.error(`Telegram failed for ${chat_id}:`, await r.text());
+    else delivered++;
   }
+  return delivered > 0;
+}
+
+async function queryNotificationLog(today) {
+  return query(`notification_log?select=job_id,reminder_type&reminder_date=eq.${today}`);
+}
+
+async function logReminders(rows) {
+  if (!rows.length) return;
+  const res = await fetch(`${SUPA_URL}/rest/v1/notification_log`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPA_SERVICE_KEY,
+      Authorization: `Bearer ${SUPA_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=ignore-duplicates,return=minimal'
+    },
+    body: JSON.stringify(rows)
+  });
+  if (!res.ok) throw new Error(`Notification log error ${res.status}: ${await res.text()}`);
 }
 
 (async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const logged = await queryNotificationLog(today);
+  const sentSet = new Set(logged.map((x) => `${x.job_id}:${x.reminder_type}`));
+
   const pending = await query('jobs?select=*&status=eq.Pending');
   const delayed = pending
-    .filter((j) => j.send_date && daysSince(j.send_date) > 3)
+    .filter((j) => j.send_date && daysSince(j.send_date) > 3 && !sentSet.has(`${j.id}:delayed`))
     .sort((a, b) => daysSince(b.send_date) - daysSince(a.send_date));
 
   // Only jobs where payment is actually owed: Done + Not Paid + charge > 0 + not warranty
   // (Can't Repair = returned, no payment. Warranty = free.)
   const unpaid = (await query('jobs?select=*&status=eq.Done&payment_status=eq.Not%20Paid'))
-    .filter((j) => j.warranty_of == null && (Number(j.charge) || 0) > 0);
+    .filter((j) => j.warranty_of == null && (Number(j.charge) || 0) > 0 && !sentSet.has(`${j.id}:unpaid`));
 
   const parts = [];
 
@@ -68,8 +94,17 @@ async function send(text) {
     return;
   }
 
-  for (const p of parts) await send(p);
-  console.log(`Sent ${parts.length} alert message(s).`);
+  const delivered = [];
+  if (delayed.length) {
+    const text = parts.find((p) => p.includes('more than 3 days delayed'));
+    if (text && await send(text)) delayed.forEach((j) => delivered.push({job_id:j.id, reminder_type:'delayed', reminder_date:today}));
+  }
+  if (unpaid.length) {
+    const text = parts.find((p) => p.includes('pending payment'));
+    if (text && await send(text)) unpaid.forEach((j) => delivered.push({job_id:j.id, reminder_type:'unpaid', reminder_date:today}));
+  }
+  await logReminders(delivered);
+  console.log(`Sent ${delivered.length} reminder records in ${parts.length} alert message(s).`);
 })().catch((e) => {
   console.error(e);
   process.exit(1);
