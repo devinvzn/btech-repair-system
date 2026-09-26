@@ -85,3 +85,12 @@ The dashboard now includes:
 - payment method capture on each job.
 
 Warranty tracking links a repeat repair to the original job_no; no warranty duration is assumed by the system.
+
+## Latest workflow / operations features
+
+- Advanced job search and date/workflow filters.
+- Workflow stages: Received, Diagnosing, Repairing, Ready, Delivered.
+- Role-based access: Admin, Technician, Reception.
+- Daily Telegram reminders for delayed and unpaid jobs, with per-day duplicate protection.
+- Admin-only JSON backup restore; restore never overwrites existing Job Nos.
+- Offline-friendly cached job viewing with connection status and automatic resync when the browser reconnects.
