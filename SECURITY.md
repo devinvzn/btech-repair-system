@@ -11,6 +11,8 @@
 - GitHub Actions secrets are used for the daily service-role database job.
 - Warranty references are enforced by a database foreign key.
 - Job numbers are enforced as unique when present.
+- Job changes are recorded in `public.job_activity` by a database trigger; clients have read-only access to the audit table.
+- Activity log data is protected by authenticated-only RLS.
 - User-provided text rendered into HTML is escaped in the frontend and Telegram messages.
 
 ## Reporting a vulnerability
