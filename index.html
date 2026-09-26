@@ -380,7 +380,7 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
           <div class="sync-badge bg-blue" id="syncBadge" onclick="syncNow()" role="button" tabindex="0">
             <span class="material-symbols-outlined">sync</span> <span class="hide-mob" id="syncText">Connected</span>
           </div>
-          <button class="btn btn-primary" onclick="openAddModal()"><span class="material-symbols-outlined">add</span> <span class="hide-mob">New Job</span></button>
+          <button class="btn btn-primary role-write" onclick="openAddModal()"><span class="material-symbols-outlined">add</span> <span class="hide-mob">New Job</span></button>
         </div>
       </header>
 
@@ -431,7 +431,7 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
             <option value="">All Workflow</option><option>Received</option><option>Diagnosing</option><option>Repairing</option><option>Ready</option><option>Delivered</option>
           </select>
           <button class="btn" onclick="exportCSV()" title="Export filtered jobs as CSV"><span class="material-symbols-outlined" style="font-size:18px">download</span> <span class="hide-mob">CSV</span></button>
-          <button class="btn" onclick="exportBackup()" title="Download full JSON backup"><span class="material-symbols-outlined" style="font-size:18px">backup</span> <span class="hide-mob">Backup</span></button>
+          <button class="btn" onclick="exportBackup()" title="Download full JSON backup"><span class="material-symbols-outlined" style="font-size:18px">backup</span> <span class="hide-mob">Backup</span></button><button class="btn admin-only" onclick="openRestorePicker()" title="Restore jobs from JSON backup"><span class="material-symbols-outlined" style="font-size:18px">restore</span> <span class="hide-mob">Restore</span></button><input type="file" id="restoreInput" accept=".json,application/json" style="display:none" onchange="restoreBackup(this.files[0])">
         </div>
 
         <div class="table-container">
@@ -669,6 +669,7 @@ async function loadCurrentUser() {
     $('currentUserName').textContent = currentUserEmail ? currentUserEmail.split('@')[0] : 'User';
     $('currentUserRole').textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = currentRole === 'admin' ? '' : 'none');
+    document.querySelectorAll('.role-write').forEach(el => el.style.display = currentRole === 'technician' ? 'none' : '');
   } catch (e) {
     currentRole = 'reception';
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
@@ -832,6 +833,7 @@ function renderTable() {
       : pl === 'N/A'
         ? `<span style="color:var(--text-muted);font-size:12px;font-weight:600">N/A</span>`
         : `<span style="color:var(--text-muted);font-size:12px;font-weight:600">Unpaid</span>`;
+    const wfTag = j.workflow_status ? '<div style="font-size:10px;color:var(--text-muted);margin-top:3px">' + esc(j.workflow_status) + '</div>' : '';
     const wTag = isWarranty(j) ? `<div><span class="tag-warranty">Warranty of #${esc(j.warranty_of)}</span></div>` : '';
 
     tr.innerHTML = `
@@ -842,7 +844,7 @@ function renderTable() {
       <td data-label="Sent"><span style="font-family:var(--font-mono); font-size:12px">${esc(j.send_date || '-')}</span></td>
       <td data-label="Returned"><span style="font-family:var(--font-mono); font-size:12px">${esc(j.returned_date || '-')}</span></td>
       <td data-label="Charge" style="font-weight:600; color:var(--success)">${isWarranty(j) ? 'Free' : (j.charge ? money(j.charge) : '-')}</td>
-      <td data-label="Status">${statusBadge(j)}</td>
+      <td data-label="Status">${statusBadge(j)}${wfTag}</td>
       <td data-label="Payment">${pBadge}</td>
       <td data-label="Actions"><div style="display:flex; gap:6px">
         <button class="btn btn-icon" style="padding:4px" onclick="viewJob(${j.id})" aria-label="View"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
@@ -853,6 +855,34 @@ function renderTable() {
 }
 
 function sortBy(f) { if (sortField === f) sortDir *= -1; else { sortField = f; sortDir = -1; } renderTable(); }
+
+function openRestorePicker() {
+  if (currentRole !== 'admin') return showToast('Admin access required', 'err');
+  $('restoreInput').value = '';
+  $('restoreInput').click();
+}
+
+async function restoreBackup(file) {
+  if (!file || currentRole !== 'admin') return;
+  try {
+    const raw = JSON.parse(await file.text());
+    if (raw.app !== 'BTech Repair' || !Array.isArray(raw.jobs)) throw new Error('Invalid BTech Repair backup file');
+    const existing = new Set(allJobs.map(j => String(j.job_no || '')));
+    const rows = raw.jobs.filter(j => j.job_no != null && !existing.has(String(j.job_no))).map(j => {
+      const x = {...j}; delete x.id; delete x.created_at; return x;
+    });
+    if (!rows.length) return showToast('Nothing to restore — all Job Nos already exist', 'err');
+    if (!confirm('Restore ' + rows.length + ' new jobs? Existing Job Nos will not be overwritten.')) return;
+    let added = 0;
+    for (let i=0; i<rows.length; i+=50) {
+      const chunk = rows.slice(i,i+50);
+      await sbFetch('jobs', {method:'POST', body:JSON.stringify(chunk)});
+      added += chunk.length;
+    }
+    showToast('Restored ' + added + ' jobs', 'ok');
+    await loadJobs();
+  } catch (e) { showToast('Restore failed: ' + e.message, 'err'); }
+}
 
 function exportBackup() {
   if (!allJobs.length) return showToast('No jobs available for backup', 'err');
@@ -879,7 +909,7 @@ function exportBackup() {
 function exportCSV() {
   const rows = getFiltered();
   if (!rows.length) return showToast('No data to export', 'err');
-  const cols = ['job_no','gn_no','customer','brand','model','serial_no','repair','send_date','returned_date','charge','status','payment_status','warranty_of'];
+  const cols = ['job_no','gn_no','customer','brand','model','serial_no','repair','send_date','returned_date','charge','status','workflow_status','payment_status','payment_method','warranty_of'];
   const cell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const csv = '\uFEFF' + [cols.join(','), ...rows.map(r => cols.map(c => cell(r[c])).join(','))].join('\n');
   const a = document.createElement('a');
