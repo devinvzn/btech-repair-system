@@ -642,6 +642,19 @@ async function syncNow() {
   b.classList.remove('spinning'); $('syncText').textContent = 'Connected'; showToast('Database synced', 'ok');
 }
 
+function updateAlerts() {
+  const delayed = allJobs.filter(isJobDelayed).sort((a,b) => daysSince(b.send_date)-daysSince(a.send_date));
+  const unpaid = allJobs.filter(isOwed).sort((a,b) => (Number(b.charge)||0)-(Number(a.charge)||0));
+  const warranty = allJobs.filter(isWarranty).sort((a,b) => (+b.job_no||0)-(+a.job_no||0));
+  $('alert-delayed-count').textContent = delayed.length;
+  $('alert-unpaid-count').textContent = unpaid.length;
+  $('alert-warranty-count').textContent = warranty.length;
+  const item = (j, meta) => '<div class="attention-item" onclick="viewJob(' + j.id + ')"><div class="meta"><b>#' + esc(j.job_no ?? '-') + '</b> · ' + esc(j.customer || '-') + '<br><span style="color:var(--text-muted)">' + meta + '</span></div><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">chevron_right</span></div>';
+  $('alert-delayed-list').innerHTML = delayed.slice(0,6).map(j => item(j, daysSince(j.send_date) + ' days pending')).join('') || '<div class="attention-empty">No delayed jobs</div>';
+  $('alert-unpaid-list').innerHTML = unpaid.slice(0,6).map(j => item(j, money(j.charge))).join('') || '<div class="attention-empty">No unpaid jobs</div>';
+  $('alert-warranty-list').innerHTML = warranty.slice(0,6).map(j => item(j, 'Warranty of #' + esc(j.warranty_of))).join('') || '<div class="attention-empty">No warranty jobs</div>';
+}
+
 function updateStats() {
   $('s-total').textContent = allJobs.length;
   $('s-done').textContent = allJobs.filter(j => j.status === 'Done').length;
@@ -650,6 +663,7 @@ function updateStats() {
   const unpaid = allJobs.filter(isOwed);
   $('s-unpaid').textContent = money(unpaid.reduce((s, j) => s + (Number(j.charge)||0), 0));
   $('s-unpaid-n').textContent = unpaid.length + (unpaid.length === 1 ? ' job' : ' jobs');
+  updateAlerts();
 }
 
 function quickFilter(status, pay) {
