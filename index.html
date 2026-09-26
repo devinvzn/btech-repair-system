@@ -166,7 +166,31 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
 .rank-list { display: flex; flex-direction: column; gap: 10px; }
 .rank-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; font-size: 13px; }
 .rank-bar { grid-column: 1 / -1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-.rank-bar > i { display: block; height: 100%; background: var(--primary-grad); border-radius: 3px; }\n.attention-grid { padding:0 24px 18px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }\n.attention-card { background:var(--surface); border:1px solid var(--surface2); border-radius:var(--radius-lg); padding:16px; }\n.attention-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }\n.attention-title { font-size:12px; font-weight:700; }\n.attention-list { display:flex; flex-direction:column; gap:7px; max-height:150px; overflow:auto; }\n.attention-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 8px; border-radius:8px; background:rgba(255,255,255,.03); cursor:pointer; }\n.attention-item:hover { background:rgba(255,255,255,.06); }\n.attention-item .meta { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; }\n.attention-empty { color:var(--text-muted); font-size:11px; padding:8px 0; }\n.timeline { display:flex; flex-direction:column; gap:10px; margin-top:4px; }\n.timeline-item { position:relative; padding:10px 12px 10px 36px; background:rgba(255,255,255,.025); border:1px solid var(--surface2); border-radius:10px; }\n.timeline-dot { position:absolute; left:12px; top:13px; width:10px; height:10px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 4px rgba(59,130,246,.12); }\n.timeline-action { font-size:12px; font-weight:700; }\n.timeline-time { font-size:10px; color:var(--text-muted); margin-top:3px; }\n.timeline-detail { font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.45; }\n.history-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }\n.history-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 10px; border:1px solid var(--surface2); border-radius:10px; cursor:pointer; }\n.history-item:hover { background:rgba(255,255,255,.03); }\n.history-item .h-main { min-width:0; }\n.history-item .h-job { font-size:12px; font-weight:700; color:var(--primary); }\n.history-item .h-meta { font-size:10px; color:var(--text-muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n@media (max-width:1000px){.attention-grid{grid-template-columns:1fr}}\n@media (min-width:1024px) and (max-width:1599px){.attention-grid{padding-left:18px;padding-right:18px;padding-bottom:12px}}\n@media (max-width:768px){.attention-grid{padding:0 14px 12px}}
+.rank-bar > i { display: block; height: 100%; background: var(--primary-grad); border-radius: 3px; }
+.attention-grid { padding:0 24px 18px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.attention-card { background:var(--surface); border:1px solid var(--surface2); border-radius:var(--radius-lg); padding:16px; }
+.attention-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+.attention-title { font-size:12px; font-weight:700; }
+.attention-list { display:flex; flex-direction:column; gap:7px; max-height:150px; overflow:auto; }
+.attention-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 8px; border-radius:8px; background:rgba(255,255,255,.03); cursor:pointer; }
+.attention-item:hover { background:rgba(255,255,255,.06); }
+.attention-item .meta { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; }
+.attention-empty { color:var(--text-muted); font-size:11px; padding:8px 0; }
+.timeline { display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+.timeline-item { position:relative; padding:10px 12px 10px 36px; background:rgba(255,255,255,.025); border:1px solid var(--surface2); border-radius:10px; }
+.timeline-dot { position:absolute; left:12px; top:13px; width:10px; height:10px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 4px rgba(59,130,246,.12); }
+.timeline-action { font-size:12px; font-weight:700; }
+.timeline-time { font-size:10px; color:var(--text-muted); margin-top:3px; }
+.timeline-detail { font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.45; }
+.history-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+.history-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 10px; border:1px solid var(--surface2); border-radius:10px; cursor:pointer; }
+.history-item:hover { background:rgba(255,255,255,.03); }
+.history-item .h-main { min-width:0; }
+.history-item .h-job { font-size:12px; font-weight:700; color:var(--primary); }
+.history-item .h-meta { font-size:10px; color:var(--text-muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media (max-width:1000px){.attention-grid{grid-template-columns:1fr}}
+@media (min-width:1024px) and (max-width:1599px){.attention-grid{padding-left:18px;padding-right:18px;padding-bottom:12px}}
+@media (max-width:768px){.attention-grid{padding:0 14px 12px}}
 
 
 /* Laptop / desktop widths: keep the full table usable on 13–16" screens
@@ -374,6 +398,11 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
           </div>
         </div>
 
+        <div class="attention-grid">
+          <div class="attention-card"><div class="attention-head"><span class="attention-title txt-red">Delayed Jobs</span><span class="status-badge badge-solid-red" id="alert-delayed-count">0</span></div><div class="attention-list" id="alert-delayed-list"></div></div>
+          <div class="attention-card"><div class="attention-head"><span class="attention-title txt-purple">Unpaid Jobs</span><span class="status-badge bg-purple" id="alert-unpaid-count">0</span></div><div class="attention-list" id="alert-unpaid-list"></div></div>
+          <div class="attention-card"><div class="attention-head"><span class="attention-title txt-purple">Warranty Tracking</span><span class="status-badge bg-purple" id="alert-warranty-count">0</span></div><div class="attention-list" id="alert-warranty-list"></div></div>
+        </div>
         <div class="toolbar">
           <div class="search-box">
             <span class="material-symbols-outlined">search</span>
@@ -424,7 +453,8 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
           </div>
 
           <div class="stats-grid" style="padding:0">
-            <div class="stat-card"><div class="stat-info"><span class="stat-label">Total Billed</span><span class="stat-value txt-blue" id="a-billed">Rs.0</span><span class="stat-sub" id="a-billed-sub"></span></div><div class="stat-icon bg-blue"><span class="material-symbols-outlined">receipt_long</span></div></div>\n            <div class="stat-card"><div class="stat-info"><span class="stat-label">Revenue (Paid)</span><span class="stat-value txt-green" id="a-rev">Rs.0</span><span class="stat-sub" id="a-rev-sub"></span></div><div class="stat-icon bg-green"><span class="material-symbols-outlined">payments</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-label">Total Billed</span><span class="stat-value txt-blue" id="a-billed">Rs.0</span><span class="stat-sub" id="a-billed-sub"></span></div><div class="stat-icon bg-blue"><span class="material-symbols-outlined">receipt_long</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-label">Revenue (Paid)</span><span class="stat-value txt-green" id="a-rev">Rs.0</span><span class="stat-sub" id="a-rev-sub"></span></div><div class="stat-icon bg-green"><span class="material-symbols-outlined">payments</span></div></div>
             <div class="stat-card"><div class="stat-info"><span class="stat-label">Outstanding</span><span class="stat-value txt-purple" id="a-out">Rs.0</span><span class="stat-sub" id="a-out-sub"></span></div><div class="stat-icon bg-purple"><span class="material-symbols-outlined">hourglass_top</span></div></div>
             <div class="stat-card"><div class="stat-info"><span class="stat-label">Avg. Turnaround</span><span class="stat-value txt-blue" id="a-tat">–</span><span class="stat-sub">send → returned</span></div><div class="stat-icon bg-blue"><span class="material-symbols-outlined">timer</span></div></div>
             <div class="stat-card"><div class="stat-info"><span class="stat-label">Success Rate</span><span class="stat-value txt-amber" id="a-succ">–</span><span class="stat-sub">excl. pending</span></div><div class="stat-icon bg-amber"><span class="material-symbols-outlined">verified</span></div></div>
@@ -432,10 +462,12 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
 
           <div class="an-grid">
             <div class="an-card"><h3>Jobs per month</h3><div class="an-note">Number of laptops sent for repair</div><div class="chart-box"><canvas id="ch-month"></canvas></div></div>
-            <div class="an-card"><h3>Revenue per month</h3><div class="an-note">Charge on jobs marked Paid, by send date</div><div class="chart-box"><canvas id="ch-rev"></canvas></div></div>\n            <div class="an-card"><h3>Billed vs collected</h3><div class="an-note">Monthly charges compared with payments received</div><div class="chart-box"><canvas id="ch-cashflow"></canvas></div></div>
+            <div class="an-card"><h3>Revenue per month</h3><div class="an-note">Charge on jobs marked Paid, by send date</div><div class="chart-box"><canvas id="ch-rev"></canvas></div></div>
+            <div class="an-card"><h3>Billed vs collected</h3><div class="an-note">Monthly charges compared with payments received</div><div class="chart-box"><canvas id="ch-cashflow"></canvas></div></div>
             <div class="an-card"><h3>Status split</h3><div class="an-note">All jobs in the selected period</div><div class="chart-box"><canvas id="ch-status"></canvas></div></div>
             <div class="an-card"><h3>Top brands</h3><div class="an-note">By number of jobs</div><div class="rank-list" id="rank-brand"></div></div>
-            <div class="an-card"><h3>Top customers</h3><div class="an-note">By number of jobs</div><div class="rank-list" id="rank-cust"></div></div>\n            <div class="an-card"><h3>Payment methods</h3><div class="an-note">Paid jobs by recorded payment method</div><div class="rank-list" id="rank-paymethod"></div></div>
+            <div class="an-card"><h3>Top customers</h3><div class="an-note">By number of jobs</div><div class="rank-list" id="rank-cust"></div></div>
+            <div class="an-card"><h3>Payment methods</h3><div class="an-note">Paid jobs by recorded payment method</div><div class="rank-list" id="rank-paymethod"></div></div>
             <div class="an-card"><h3>Common repair issues</h3><div class="an-note">Grouped by keyword in the fault description</div><div class="rank-list" id="rank-issue"></div></div>
           </div>
         </div>
@@ -470,7 +502,8 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
       <div class="form-full"><label for="f-repair">Repair / Fault *</label><textarea id="f-repair" placeholder="Describe the issue..."></textarea></div>
       <div><label for="f-charge">Charge (LKR)</label><input type="number" id="f-charge" placeholder="0.00" min="0"></div>
       <div><label for="f-status">Repair Status</label><select id="f-status" onchange="onStatusChange()"><option>Pending</option><option>Done</option><option value="Can't Repair">Can't Repair (Return)</option></select></div>
-      <div><label for="f-payment_status">Payment Status</label><select id="f-payment_status"><option>Not Paid</option><option>Paid</option><option value="N/A">N/A (No charge)</option></select></div>\n      <div><label for="f-payment_method">Payment Method</label><select id="f-payment_method"><option>Cash</option><option>Card</option><option>Bank Transfer</option><option>Other</option></select></div>
+      <div><label for="f-payment_status">Payment Status</label><select id="f-payment_status"><option>Not Paid</option><option>Paid</option><option value="N/A">N/A (No charge)</option></select></div>
+      <div><label for="f-payment_method">Payment Method</label><select id="f-payment_method"><option>Cash</option><option>Card</option><option>Bank Transfer</option><option>Other</option></select></div>
       <div><label for="f-returned_date">Returned Date</label><input type="date" id="f-returned_date"></div>
       <div class="form-full warranty-box" id="warrantyBox">
         <label class="warranty-check"><input type="checkbox" id="f-is_warranty" onchange="onWarrantyToggle()"> Warranty job (customer brought back a laptop we already repaired)</label>
@@ -495,7 +528,9 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
       <div class="modal-title" id="viewTitle">Job Details</div>
       <button class="close-btn" onclick="closeView()" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <div id="viewBody" style="display:flex; flex-direction:column; gap:12px;"></div>\n    <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Customer History</div><div id="customerHistory" class="history-list"></div></div>\n    <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Job Timeline</div><div id="jobTimeline" class="timeline"><div class="attention-empty">Loading activity…</div></div></div>
+    <div id="viewBody" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Customer History</div><div id="customerHistory" class="history-list"></div></div>
+    <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Job Timeline</div><div id="jobTimeline" class="timeline"><div class="attention-empty">Loading activity…</div></div></div>
     <div class="modal-footer">
       <button class="btn" style="color:var(--danger); border-color:var(--danger)" id="vDelBtn" aria-label="Delete job"><span class="material-symbols-outlined" style="font-size:16px">delete</span> Delete</button>
       <button class="btn" id="vPayBtn"><span class="material-symbols-outlined" style="font-size:16px">payments</span> Mark Paid</button>
@@ -646,13 +681,14 @@ function updateAlerts() {
   const delayed = allJobs.filter(isJobDelayed).sort((a,b) => daysSince(b.send_date)-daysSince(a.send_date));
   const unpaid = allJobs.filter(isOwed).sort((a,b) => (Number(b.charge)||0)-(Number(a.charge)||0));
   const warranty = allJobs.filter(isWarranty).sort((a,b) => (+b.job_no||0)-(+a.job_no||0));
-  $('alert-delayed-count').textContent = delayed.length;
-  $('alert-unpaid-count').textContent = unpaid.length;
-  $('alert-warranty-count').textContent = warranty.length;
+  const dc = $('alert-delayed-count'), uc = $('alert-unpaid-count'), wc = $('alert-warranty-count');
+  const dl = $('alert-delayed-list'), ul = $('alert-unpaid-list'), wl = $('alert-warranty-list');
+  if (!dc || !uc || !wc || !dl || !ul || !wl) return;
+  dc.textContent = delayed.length; uc.textContent = unpaid.length; wc.textContent = warranty.length;
   const item = (j, meta) => '<div class="attention-item" onclick="viewJob(' + j.id + ')"><div class="meta"><b>#' + esc(j.job_no ?? '-') + '</b> · ' + esc(j.customer || '-') + '<br><span style="color:var(--text-muted)">' + meta + '</span></div><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">chevron_right</span></div>';
-  $('alert-delayed-list').innerHTML = delayed.slice(0,6).map(j => item(j, daysSince(j.send_date) + ' days pending')).join('') || '<div class="attention-empty">No delayed jobs</div>';
-  $('alert-unpaid-list').innerHTML = unpaid.slice(0,6).map(j => item(j, money(j.charge))).join('') || '<div class="attention-empty">No unpaid jobs</div>';
-  $('alert-warranty-list').innerHTML = warranty.slice(0,6).map(j => item(j, 'Warranty of #' + esc(j.warranty_of))).join('') || '<div class="attention-empty">No warranty jobs</div>';
+  dl.innerHTML = delayed.slice(0,6).map(j => item(j, daysSince(j.send_date) + ' days pending')).join('') || '<div class="attention-empty">No delayed jobs</div>';
+  ul.innerHTML = unpaid.slice(0,6).map(j => item(j, money(j.charge))).join('') || '<div class="attention-empty">No unpaid jobs</div>';
+  wl.innerHTML = warranty.slice(0,6).map(j => item(j, 'Warranty of #' + esc(j.warranty_of))).join('') || '<div class="attention-empty">No warranty jobs</div>';
 }
 
 function updateStats() {
@@ -739,7 +775,8 @@ function exportCSV() {
   if (!rows.length) return showToast('No data to export', 'err');
   const cols = ['job_no','gn_no','customer','brand','model','serial_no','repair','send_date','returned_date','charge','status','payment_status','warranty_of'];
   const cell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const csv = '\uFEFF' + [cols.join(','), ...rows.map(r => cols.map(c => cell(r[c])).join(','))].join('\n');
+  const csv = '\uFEFF' + [cols.join(','), ...rows.map(r => cols.map(c => cell(r[c])).join(','))].join('
+');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   a.download = 'btech-jobs-' + new Date().toISOString().slice(0, 10) + '.csv';
