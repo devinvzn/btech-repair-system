@@ -974,9 +974,11 @@ function renderAnalytics() {
     months = keys;
   }
 
+  const billable = jobs.filter(j => !isWarranty(j));
   const paid = jobs.filter(j => j.payment_status === 'Paid' && !isWarranty(j));
   const outstanding = jobs.filter(isOwed);
   const sum = arr => arr.reduce((s, j) => s + (Number(j.charge) || 0), 0);
+  $('a-billed').textContent = money(sum(billable)); $('a-billed-sub').textContent = billable.length + ' billable jobs';
   $('a-rev').textContent = money(sum(paid)); $('a-rev-sub').textContent = paid.length + ' paid jobs';
   $('a-out').textContent = money(sum(outstanding)); $('a-out-sub').textContent = outstanding.length + ' jobs waiting for payment';
 
@@ -993,7 +995,10 @@ function renderAnalytics() {
   const base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: tick }, y: { grid, ticks: { ...tick, precision: 0 }, beginAtZero: true } } };
 
   drawChart('month', 'ch-month', { type: 'bar', data: { labels, datasets: [{ data: months.map(m => perMonth[m]), backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: base });
+  const billedMonth = Object.fromEntries(months.map(m => [m, 0]));
+  jobs.forEach(j => { const k = monthKey(j.send_date); if (k in billedMonth && !isWarranty(j)) billedMonth[k] += Number(j.charge) || 0; });
   drawChart('rev', 'ch-rev', { type: 'line', data: { labels, datasets: [{ data: months.map(m => revMonth[m]), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.15)', fill: true, tension: .3, pointRadius: 3 }] }, options: base });
+  drawChart('cashflow', 'ch-cashflow', { type: 'bar', data: { labels, datasets: [{ label:'Billed', data:months.map(m=>billedMonth[m]), backgroundColor:'#3b82f6', borderRadius:4 }, { label:'Collected', data:months.map(m=>revMonth[m]), backgroundColor:'#10b981', borderRadius:4 }] }, options: { ...base, plugins:{ legend:{ display:true, labels:{ color:'#94a3b8' } } } } });
 
   const stCount = { Done: 0, Pending: 0, Delayed: 0, Returned: 0 };
   jobs.forEach(j => { if (isJobDelayed(j)) stCount.Delayed++; else if (isReturned(j)) stCount.Returned++; else stCount[j.status] = (stCount[j.status] || 0) + 1; });
@@ -1012,8 +1017,11 @@ function renderAnalytics() {
     const k = hit ? hit[0] : 'Other';
     issues[k] = (issues[k] || 0) + 1;
   });
+  const payMethods = {};
+  paid.forEach(j => { const k = j.payment_method || 'Cash'; payMethods[k] = (payMethods[k] || 0) + 1; });
   $('rank-brand').innerHTML = rankHtml(topN(brands));
   $('rank-cust').innerHTML = rankHtml(topN(custs));
+  $('rank-paymethod').innerHTML = rankHtml(topN(payMethods), v => v + ' paid');
   $('rank-issue').innerHTML = rankHtml(topN(issues, 8));
 }
 
