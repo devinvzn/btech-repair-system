@@ -604,7 +604,23 @@ async function notify(type, job) {
 }
 
 // ---------- AUTH ----------
+function updateConnectionStatus() {
+  const online = navigator.onLine;
+  const b = $('syncBadge'), t = $('syncText');
+  if (!b || !t) return;
+  b.classList.toggle('offline', !online);
+  t.textContent = online ? 'Connected' : 'Offline';
+  b.title = online ? 'Database connection available' : 'Offline — showing cached jobs when available';
+}
+
+window.addEventListener('online', () => {
+  updateConnectionStatus();
+  if (sessionToken) syncNow().catch(() => {});
+});
+window.addEventListener('offline', updateConnectionStatus);
+
 function checkAuth() {
+  updateConnectionStatus();
   if (!sessionToken) {
     $('loginOverlay').style.display = 'flex';
     $('appContainer').style.display = 'none';
@@ -753,6 +769,7 @@ async function loadJobs() {
 }
 
 async function syncNow() {
+  if (!navigator.onLine) { updateConnectionStatus(); showToast('You are offline — using cached data', 'err'); return; }
   const b = $('syncBadge'); b.classList.add('spinning'); $('syncText').textContent = 'Syncing...';
   await loadJobs();
   b.classList.remove('spinning'); $('syncText').textContent = 'Connected'; showToast('Database synced', 'ok');
