@@ -57,6 +57,8 @@ Current production migrations include:
 - `sync_jobs_schema_and_rls`
 - `add_jobs_integrity_constraints`
 - `index_warranty_reference`
+- `validate_job_values`
+- `add_job_activity_audit_log`
 
 The `warranty_of` field references the original job's `job_no` at the database level.
 
@@ -70,3 +72,16 @@ Supabase's HaveIBeenPwned leaked-password protection is currently unavailable on
 - Access/refresh session tokens are currently stored in browser localStorage because this is a static browser-only app.
 - Logout now also performs a best-effort server-side Auth sign-out to revoke the refresh session.
 - The service worker only caches same-origin application shell files; Supabase/API responses are not cached.
+
+## Current app features
+
+The dashboard now includes:
+
+- customer/device history in the job details view,
+- per-job activity timeline backed by public.job_activity,
+- warranty tracking and linked warranty jobs,
+- dashboard attention panels for delayed, unpaid, and warranty jobs,
+- billed vs collected analytics and payment-method reporting,
+- payment method capture on each job.
+
+Warranty tracking links a repeat repair to the original job_no; no warranty duration is assumed by the system.
