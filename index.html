@@ -268,7 +268,15 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
   .toolbar { padding: 0 14px 12px; gap: 8px; }
   .search-box { flex: 1 1 100%; min-width: 0; }
   .toolbar select { flex: 1 1 0; min-width: 0; width: auto; }
-  .toolbar .btn { flex: 0 0 auto; }
+  .toolbar .btn { flex: 0 0 auto; min-height: 40px; }
+  .toolbar .btn .material-symbols-outlined { margin: 0; }
+  .attention-card { padding: 12px; }
+  .attention-list { max-height: 180px; }
+  .history-item { padding: 10px; }
+  .timeline-item { padding: 10px 10px 10px 34px; }
+  .mobile-nav { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .mobile-nav .mob-nav-item { min-height: 58px; }
+  .mobile-nav .material-symbols-outlined { font-size: 21px; }
 
   /* Table -> cards */
   .table-container { padding: 0 14px 90px; overflow: visible; }
@@ -414,7 +422,8 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
           <select id="fPay" onchange="renderTable()" aria-label="Filter by payment">
             <option value="">All Payments</option><option value="Paid">Paid</option><option value="Not Paid">Not Paid</option><option value="N/A">N/A (No charge)</option>
           </select>
-          <button class="btn" onclick="exportCSV()" title="Export filtered jobs"><span class="material-symbols-outlined" style="font-size:18px">download</span> <span class="hide-mob">CSV</span></button>
+          <button class="btn" onclick="exportCSV()" title="Export filtered jobs as CSV"><span class="material-symbols-outlined" style="font-size:18px">download</span> <span class="hide-mob">CSV</span></button>
+          <button class="btn" onclick="exportBackup()" title="Download full JSON backup"><span class="material-symbols-outlined" style="font-size:18px">backup</span> <span class="hide-mob">Backup</span></button>
         </div>
 
         <div class="table-container">
@@ -769,6 +778,28 @@ function renderTable() {
 }
 
 function sortBy(f) { if (sortField === f) sortDir *= -1; else { sortField = f; sortDir = -1; } renderTable(); }
+
+function exportBackup() {
+  if (!allJobs.length) return showToast('No jobs available for backup', 'err');
+  const payload = {
+    app: 'BTech Repair',
+    backup_version: 1,
+    generated_at: new Date().toISOString(),
+    job_count: allJobs.length,
+    jobs: allJobs
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'btech-repair-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Full backup downloaded (' + allJobs.length + ' jobs)', 'ok');
+}
 
 function exportCSV() {
   const rows = getFiltered();
