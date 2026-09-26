@@ -775,8 +775,7 @@ function exportCSV() {
   if (!rows.length) return showToast('No data to export', 'err');
   const cols = ['job_no','gn_no','customer','brand','model','serial_no','repair','send_date','returned_date','charge','status','payment_status','warranty_of'];
   const cell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const csv = '\uFEFF' + [cols.join(','), ...rows.map(r => cols.map(c => cell(r[c])).join(','))].join('
-');
+  const csv = '\uFEFF' + [cols.join(','), ...rows.map(r => cols.map(c => cell(r[c])).join(','))].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   a.download = 'btech-jobs-' + new Date().toISOString().slice(0, 10) + '.csv';
