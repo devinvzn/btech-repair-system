@@ -805,7 +805,7 @@ function openAddModal() {
 function closeModal() { $('modalOverlay').classList.remove('open'); }
 function clearForm() {
   FIELDS.forEach(k => $('f-' + k).value = '');
-  $('f-status').value = 'Pending'; $('f-payment_status').value = 'Not Paid';
+  $('f-status').value = 'Pending'; $('f-payment_status').value = 'Not Paid'; $('f-payment_method').value = 'Cash';
   $('f-is_warranty').checked = false; $('f-warranty_of').value = ''; $('warrantyHint').textContent = '';
   $('warrantyBox').classList.remove('on');
 }
@@ -814,6 +814,7 @@ function openEditModal(id) {
   const j = allJobs.find(x => x.id === id); if (!j) return;
   editingId = id; $('modalTitle').textContent = 'Edit Job #' + (j.job_no ?? '');
   [...FIELDS, 'status', 'payment_status'].forEach(k => { $('f-' + k).value = j[k] ?? ''; });
+  $('f-payment_method').value = j.payment_method || 'Cash';
   if (!j.payment_status) $('f-payment_status').value = 'Not Paid';
   $('f-is_warranty').checked = isWarranty(j);
   $('warrantyBox').classList.toggle('on', isWarranty(j));
@@ -827,7 +828,7 @@ async function saveJob() {
     job_no: +$('f-job_no').value || null, customer: $('f-customer').value.trim(),
     brand: $('f-brand').value, repair: $('f-repair').value.trim(),
     send_date: $('f-send_date').value || null, charge: +$('f-charge').value || 0,
-    status: $('f-status').value, payment_status: $('f-payment_status').value,
+    status: $('f-status').value, payment_status: $('f-payment_status').value, payment_method: $('f-payment_method').value,
     gn_no: $('f-gn_no').value.trim() || null, model: $('f-model').value.trim() || null,
     serial_no: $('f-serial_no').value.trim() || null, returned_date: $('f-returned_date').value || null,
     warranty_of: $('f-is_warranty').checked ? (+$('f-warranty_of').value || null) : null
