@@ -873,7 +873,7 @@ async function saveJob() {
   btn.disabled = false; btn.innerHTML = orig;
 }
 
-function viewJob(id) {
+async function viewJob(id) {
   const j = allJobs.find(x => x.id === id); if (!j) return;
   $('viewTitle').textContent = 'Job #' + (j.job_no ?? '');
   const row = (k, v, strong) => `<div class="detail-row"><span class="k">${k}</span><span class="v">${strong ? '<strong style="font-size:16px">' + v + '</strong>' : v}</span></div>`;
@@ -889,6 +889,7 @@ function viewJob(id) {
     (isWarranty(j) ? row('Warranty of', `<a href="#" style="color:var(--purple);font-weight:700" onclick="event.preventDefault();openLinkedJob(${+j.warranty_of})">Job #${esc(j.warranty_of)}</a>`) : '') +
     (warrantyChildren(j).length ? row('Warranty repairs', warrantyChildren(j).map(c => `<a href="#" style="color:var(--purple);font-weight:700" onclick="event.preventDefault();openLinkedJob(${+c.job_no})">#${esc(c.job_no)}</a>`).join(', ')) : '') +
     row('Payment', esc(payLabel(j))) +
+    row('Payment Method', esc(j.payment_method || 'Cash')) +
     row('Charge', `<span style="color:var(--success)">${isWarranty(j) ? 'Free (Warranty)' : money(j.charge)}</span>`, true);
 
   $('vEditBtn').onclick = () => openEditModal(id);
@@ -906,7 +907,16 @@ function viewJob(id) {
     try { await sbFetch('jobs?id=eq.' + id, { method: 'DELETE' }); closeView(); loadJobs(); showToast('Deleted', 'ok'); }
     catch (e) { showToast('Delete failed', 'err'); }
   };
+  const related = allJobs.filter(x => x.id !== j.id && ((j.customer && x.customer && x.customer.trim().toLowerCase() === j.customer.trim().toLowerCase()) || (j.serial_no && x.serial_no && x.serial_no.trim().toLowerCase() === j.serial_no.trim().toLowerCase()))).sort((a,b) => (+b.job_no||0)-(+a.job_no||0));
+  $('customerHistory').innerHTML = related.length ? related.slice(0,10).map(x => '<div class="history-item" onclick="viewJob(' + x.id + ')"><div class="h-main"><div class="h-job">#' + esc(x.job_no ?? '-') + ' · ' + esc(x.status || '-') + '</div><div class="h-meta">' + esc(x.send_date || '-') + ' · ' + esc(x.brand || '') + ' ' + esc(x.model || '') + ' · ' + esc(x.repair || '-') + '</div></div><span style="font-weight:700;color:var(--success)">' + (isWarranty(x) ? 'Warranty' : money(x.charge)) + '</span></div>').join('') : '<div class="attention-empty">No previous jobs found for this customer/device.</div>';
+  $('jobTimeline').innerHTML = '<div class="attention-empty">Loading activity…</div>';
   $('viewOverlay').classList.add('open');
+  try {
+    const logs = await sbFetch('job_activity?select=id,job_no,action,details,changed_by,created_at&job_id=eq.' + id + '&order=created_at.desc&limit=20');
+    const actionLabel = a => a === 'created' ? 'Job created' : a === 'deleted' ? 'Job deleted' : 'Job updated';
+    const detailText = d => { if (!d) return ''; const bits=[]; if (d.status) bits.push('Status: ' + d.status); if (d.payment_status) bits.push('Payment: ' + d.payment_status); if (d.charge != null) bits.push('Charge: ' + money(d.charge)); if (d.warranty_of) bits.push('Warranty of #' + d.warranty_of); return bits.join(' · '); };
+    $('jobTimeline').innerHTML = logs.length ? logs.map(l => '<div class="timeline-item"><span class="timeline-dot"></span><div class="timeline-action">' + actionLabel(l.action) + '</div><div class="timeline-time">' + new Date(l.created_at).toLocaleString() + '</div><div class="timeline-detail">' + esc(detailText(l.details)) + '</div></div>').join('') : '<div class="attention-empty">No activity recorded yet. New changes will appear here.</div>';
+  } catch (e) { $('jobTimeline').innerHTML = '<div class="attention-empty">Activity log unavailable.</div>'; }
 }
 function warrantyChildren(j) { return j.job_no ? allJobs.filter(x => +x.warranty_of === +j.job_no) : []; }
 function openLinkedJob(n) { const t = allJobs.find(x => +x.job_no === n); if (t) viewJob(t.id); else showToast(`Job #${n} not found`, 'err'); }
