@@ -28,3 +28,9 @@ Open a private security report through the repository's GitHub security/contact 
 - and any relevant screenshots or logs with secrets removed.
 
 Never include passwords, Supabase service-role keys, Telegram bot tokens, or refresh tokens in a report.
+
+## Role-based access
+
+Jobs remain protected by RLS. Admins can manage roles and delete jobs; technicians can update jobs; reception users can create and update jobs. New Auth users are provisioned as Reception by default.
+
+Backup restore is restricted to Admin users in the UI and only inserts Job Nos that do not already exist.
