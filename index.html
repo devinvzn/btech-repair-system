@@ -581,6 +581,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 let sessionToken = localStorage.getItem('btech_auth_token');
 let refreshToken = localStorage.getItem('btech_refresh_token');
 let allJobs = [];
+let currentRole = 'reception', currentUserEmail = '';
 let sortField = 'job_no', sortDir = -1;
 let editingId = null;
 let charts = {};
@@ -610,6 +611,7 @@ function checkAuth() {
   } else {
     $('loginOverlay').style.display = 'none';
     $('appContainer').style.display = 'block';
+    loadCurrentUser();
     loadJobs();
   }
 }
@@ -657,6 +659,48 @@ async function logout() {
   checkAuth();
 }
 
+async function loadCurrentUser() {
+  try {
+    const me = await sbFetch('user_roles?select=user_id,email,role&user_id=eq.' + encodeURIComponent(await getAuthUserId()));
+    const profile = me[0];
+    if (!profile) throw new Error('User role not configured');
+    currentRole = profile.role || 'reception';
+    currentUserEmail = profile.email || '';
+    $('currentUserName').textContent = currentUserEmail ? currentUserEmail.split('@')[0] : 'User';
+    $('currentUserRole').textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = currentRole === 'admin' ? '' : 'none');
+  } catch (e) {
+    currentRole = 'reception';
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  }
+}
+
+async function getAuthUserId() {
+  const r = await fetch(SUPA_URL + '/auth/v1/user', { headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + sessionToken } });
+  if (!r.ok) throw new Error('Could not read user');
+  return (await r.json()).id;
+}
+
+async function openTeamModal() {
+  if (currentRole !== 'admin') return showToast('Admin access required', 'err');
+  $('teamOverlay').classList.add('open');
+  $('teamList').innerHTML = '<div class="attention-empty">Loading team…</div>';
+  try {
+    const users = await sbFetch('user_roles?select=user_id,email,role,created_at&order=email.asc');
+    $('teamList').innerHTML = users.map(u => '<div class="history-item"><div class="h-main"><div class="h-job">' + esc(u.email || u.user_id) + '</div><div class="h-meta">' + esc(u.user_id) + '</div></div><select onchange="changeUserRole(\'' + u.user_id + '\',this.value)" style="width:140px"><option value="admin"' + (u.role==='admin'?' selected':'') + '>Admin</option><option value="technician"' + (u.role==='technician'?' selected':'') + '>Technician</option><option value="reception"' + (u.role==='reception'?' selected':'') + '>Reception</option></select></div>').join('') || '<div class="attention-empty">No users found.</div>';
+  } catch (e) { $('teamList').innerHTML = '<div class="attention-empty">Could not load team.</div>'; }
+}
+
+function closeTeamModal() { $('teamOverlay').classList.remove('open'); }
+
+async function changeUserRole(userId, role) {
+  try {
+    await sbFetch('user_roles?user_id=eq.' + encodeURIComponent(userId), { method:'PATCH', body:JSON.stringify({role}) });
+    showToast('Role updated', 'ok');
+    if (userId === await getAuthUserId()) { currentRole = role; loadCurrentUser(); }
+  } catch (e) { showToast('Role update failed: ' + e.message, 'err'); }
+}
+
 async function tryRefresh() {
   if (!refreshToken) return false;
   try {
@@ -691,11 +735,20 @@ async function loadJobs() {
   $('loadingState').style.display = 'block';
   $('jobsBody').innerHTML = '';
   try {
+    try { currentRole = (await sbFetch('user_roles?select=role&user_id=eq.' + encodeURIComponent(await getAuthUserId())))[0]?.role || currentRole; } catch (_) {}
     allJobs = await sbFetch('jobs?select=*&order=job_no.desc&limit=2000');
+    localStorage.setItem('btech_jobs_cache', JSON.stringify({saved_at:new Date().toISOString(), jobs:allJobs}));
     $('loadingState').style.display = 'none';
     updateStats(); renderTable();
     if ($('tab-analytics').style.display !== 'none') renderAnalytics();
-  } catch (e) { $('loadingState').style.display = 'none'; showToast('Sync failed: ' + e.message, 'err'); }
+  } catch (e) {
+    $('loadingState').style.display = 'none';
+    const cached = localStorage.getItem('btech_jobs_cache');
+    if (cached) {
+      try { allJobs = JSON.parse(cached).jobs || []; updateStats(); renderTable(); $('syncText').textContent='Offline'; showToast('Offline mode: showing cached jobs', 'err'); return; } catch (_) {}
+    }
+    showToast('Sync failed: ' + e.message, 'err');
+  }
 }
 
 async function syncNow() {
@@ -730,13 +783,14 @@ function updateStats() {
 }
 
 function quickFilter(status, pay) {
-  $('fStatus').value = status; $('fPay').value = pay; $('searchInput').value = ''; renderTable();
+  $('fStatus').value = status; $('fPay').value = pay; $('fWorkflow').value = ''; $('fFrom').value = ''; $('fTo').value = ''; $('searchInput').value = ''; renderTable();
   document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function getFiltered() {
   const q = $('searchInput').value.toLowerCase().trim();
-  const fs = $('fStatus').value, fp = $('fPay').value;
+  const fs = $('fStatus').value, fp = $('fPay').value, fw = $('fWorkflow').value;
+  const from = $('fFrom').value, to = $('fTo').value;
   return allJobs.filter(j => {
     if (q && ![j.job_no, j.customer, j.serial_no, j.model, j.gn_no, j.warranty_of].join(' ').toLowerCase().includes(q)) return false;
     if (fs === 'Delayed') { if (!isJobDelayed(j)) return false; }
@@ -746,6 +800,9 @@ function getFiltered() {
       const pl = payLabel(j);
       if (fp === 'Not Paid' ? !isOwed(j) : pl !== fp) return false;
     }
+    if (fw && j.workflow_status !== fw) return false;
+    if (from && (!j.send_date || j.send_date < from)) return false;
+    if (to && (!j.send_date || j.send_date > to)) return false;
     return true;
   }).sort((a, b) => {
     let av = a[sortField] ?? '', bv = b[sortField] ?? '';
@@ -890,7 +947,7 @@ function openAddModal() {
 function closeModal() { $('modalOverlay').classList.remove('open'); }
 function clearForm() {
   FIELDS.forEach(k => $('f-' + k).value = '');
-  $('f-status').value = 'Pending'; $('f-payment_status').value = 'Not Paid'; $('f-payment_method').value = 'Cash';
+  $('f-status').value = 'Pending'; $('f-workflow_status').value = 'Received'; $('f-payment_status').value = 'Not Paid'; $('f-payment_method').value = 'Cash';
   $('f-is_warranty').checked = false; $('f-warranty_of').value = ''; $('warrantyHint').textContent = '';
   $('warrantyBox').classList.remove('on');
 }
@@ -899,6 +956,7 @@ function openEditModal(id) {
   const j = allJobs.find(x => x.id === id); if (!j) return;
   editingId = id; $('modalTitle').textContent = 'Edit Job #' + (j.job_no ?? '');
   [...FIELDS, 'status', 'payment_status'].forEach(k => { $('f-' + k).value = j[k] ?? ''; });
+  $('f-workflow_status').value = j.workflow_status || (j.status === 'Done' ? 'Delivered' : 'Received');
   $('f-payment_method').value = j.payment_method || 'Cash';
   if (!j.payment_status) $('f-payment_status').value = 'Not Paid';
   $('f-is_warranty').checked = isWarranty(j);
@@ -913,7 +971,7 @@ async function saveJob() {
     job_no: +$('f-job_no').value || null, customer: $('f-customer').value.trim(),
     brand: $('f-brand').value, repair: $('f-repair').value.trim(),
     send_date: $('f-send_date').value || null, charge: +$('f-charge').value || 0,
-    status: $('f-status').value, payment_status: $('f-payment_status').value, payment_method: $('f-payment_method').value,
+    status: $('f-status').value, workflow_status: $('f-workflow_status').value, payment_status: $('f-payment_status').value, payment_method: $('f-payment_method').value,
     gn_no: $('f-gn_no').value.trim() || null, model: $('f-model').value.trim() || null,
     serial_no: $('f-serial_no').value.trim() || null, returned_date: $('f-returned_date').value || null,
     warranty_of: $('f-is_warranty').checked ? (+$('f-warranty_of').value || null) : null
