@@ -470,7 +470,7 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
       <div class="form-full"><label for="f-repair">Repair / Fault *</label><textarea id="f-repair" placeholder="Describe the issue..."></textarea></div>
       <div><label for="f-charge">Charge (LKR)</label><input type="number" id="f-charge" placeholder="0.00" min="0"></div>
       <div><label for="f-status">Repair Status</label><select id="f-status" onchange="onStatusChange()"><option>Pending</option><option>Done</option><option value="Can't Repair">Can't Repair (Return)</option></select></div>
-      <div><label for="f-payment_status">Payment Status</label><select id="f-payment_status"><option>Not Paid</option><option>Paid</option><option value="N/A">N/A (No charge)</option></select></div>
+      <div><label for="f-payment_status">Payment Status</label><select id="f-payment_status"><option>Not Paid</option><option>Paid</option><option value="N/A">N/A (No charge)</option></select></div>\n      <div><label for="f-payment_method">Payment Method</label><select id="f-payment_method"><option>Cash</option><option>Card</option><option>Bank Transfer</option><option>Other</option></select></div>
       <div><label for="f-returned_date">Returned Date</label><input type="date" id="f-returned_date"></div>
       <div class="form-full warranty-box" id="warrantyBox">
         <label class="warranty-check"><input type="checkbox" id="f-is_warranty" onchange="onWarrantyToggle()"> Warranty job (customer brought back a laptop we already repaired)</label>
@@ -495,7 +495,7 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
       <div class="modal-title" id="viewTitle">Job Details</div>
       <button class="close-btn" onclick="closeView()" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <div id="viewBody" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div id="viewBody" style="display:flex; flex-direction:column; gap:12px;"></div>\n    <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Customer History</div><div id="customerHistory" class="history-list"></div></div>\n    <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Job Timeline</div><div id="jobTimeline" class="timeline"><div class="attention-empty">Loading activity…</div></div></div>
     <div class="modal-footer">
       <button class="btn" style="color:var(--danger); border-color:var(--danger)" id="vDelBtn" aria-label="Delete job"><span class="material-symbols-outlined" style="font-size:16px">delete</span> Delete</button>
       <button class="btn" id="vPayBtn"><span class="material-symbols-outlined" style="font-size:16px">payments</span> Mark Paid</button>
