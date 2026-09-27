@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BTech Repair">
-<title>BTech Repair – Modern System</title>
+<title>GUI Technologies | BTech Repair</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -140,6 +140,19 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
 
 .login-wrap { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
 .login-box { background: rgba(30,41,59,.7); backdrop-filter: blur(20px); border: 1px solid var(--surface2); border-radius: var(--radius-lg); padding: 40px; width: 380px; max-width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
+
+.brand-logos { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.brand-logos img { display:block; object-fit:contain; border-radius:8px; }
+.brand-logo-btech { width:44px; height:44px; }
+.brand-logo-gui { width:34px; height:34px; }
+.login-brand { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:18px; }
+.login-brand img { display:block; object-fit:contain; border-radius:10px; }
+.login-brand .btech { width:78px; height:78px; }
+.login-brand .gui { width:68px; height:68px; background:#fff; padding:4px; }
+@media (max-width:768px) {
+  .brand-logo-btech { width:38px; height:38px; }
+  .brand-logo-gui { width:30px; height:30px; }
+}
 
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: 30px; padding: 12px 24px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: all .3s cubic-bezier(.68,-.55,.265,1.55); box-shadow: 0 10px 25px rgba(0,0,0,.3); display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -337,6 +350,10 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
 <!-- LOGIN -->
 <div class="login-wrap" id="loginOverlay">
   <div class="login-box">
+    <div class="login-brand">
+      <img class="btech" src="assets/btech-logo.svg" alt="BTech logo">
+      <img class="gui" src="assets/gui-technologies-logo.svg" alt="GUI Technologies logo">
+    </div>
     <div class="brand-sub" style="margin-bottom:8px">GUI Technologies</div>
     <h2 style="font-size:24px; margin-bottom:30px;">BTech System</h2>
     <div style="text-align:left; margin-bottom:16px;">
@@ -356,6 +373,10 @@ label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mut
   <div class="layout-wrapper">
     <aside class="sidebar">
       <div class="brand-area">
+        <div class="brand-logos">
+          <img class="brand-logo-btech" src="assets/btech-logo.svg" alt="BTech logo">
+          <img class="brand-logo-gui" src="assets/gui-technologies-logo.svg" alt="GUI Technologies logo">
+        </div>
         <div class="brand-sub">GUI Technologies</div>
         <div class="brand-title">BTech Repair</div>
       </div>
