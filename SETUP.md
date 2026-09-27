@@ -59,6 +59,10 @@ Current production migrations include:
 - `index_warranty_reference`
 - `validate_job_values`
 - `add_job_activity_audit_log`
+- `add_workflow_roles_and_reminders`
+- `harden_user_role_authorization_v2`
+- `extend_job_activity_workflow_details`
+- `correct_returned_workflow_stage`
 
 The `warranty_of` field references the original job's `job_no` at the database level.
 
@@ -89,7 +93,7 @@ Warranty tracking links a repeat repair to the original job_no; no warranty dura
 ## Latest workflow / operations features
 
 - Advanced job search and date/workflow filters.
-- Workflow stages: Received, Diagnosing, Repairing, Ready, Delivered.
+- Workflow stages: Received, Diagnosing, Repairing, Ready, Returned, Delivered.
 - Role-based access: Admin, Technician, Reception.
 - Daily Telegram reminders for delayed and unpaid jobs, with per-day duplicate protection.
 - Admin-only JSON backup restore; restore never overwrites existing Job Nos.
