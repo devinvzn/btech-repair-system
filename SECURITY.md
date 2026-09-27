@@ -31,6 +31,6 @@ Never include passwords, Supabase service-role keys, Telegram bot tokens, or ref
 
 ## Role-based access
 
-Jobs remain protected by RLS. Admins can manage roles and delete jobs; technicians can update jobs; reception users can create and update jobs. New Auth users are provisioned as Reception by default.
+Jobs remain protected by RLS. Admins can manage roles and delete jobs; technicians can update jobs; reception users can create and update jobs. Workflow includes a separate Returned stage for jobs that cannot be repaired. New Auth users are provisioned as Reception by default.
 
 Backup restore is restricted to Admin users in the UI and only inserts Job Nos that do not already exist.
